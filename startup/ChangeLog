@@ -1,0 +1,19 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* start_world.c (start_world): Extra semicolon.
+
+	* start_fs_native_bmod.c (start_fs_native_bmod): Make the
+	declaration ANSI-compliant.
+
+	* start_cq_console.c (start_cq_console): Add extern
+	cq_com_console_init and cq_direct_console_init.
+	* start_console.c (start_console): Add extern
+	oskit_console_reinit.
+
+	* start_conf_network_eifconfig.c: <oskit/c/string.h> is included.
+
+2003-01-16  Derek Davies <ddavies@ddavies.net>
+
+	* GNUmakerules: Link in start_entropy_devices.o
+	* start_devices.c: Provide entropy init hook.
+	* start_entropy_devices.c: New file.

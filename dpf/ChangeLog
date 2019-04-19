@@ -1,0 +1,8 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* src/dpf/demand.h (AssertNow): Extra semicolon.
+	* src/dpf/dpf_lib.h (AssertNow): Likewise.
+
+	* dpf/dpf_glue.c: <oskit/c/string.h> is included.
+	* src/dpf/dpf_lib.c: Likewise.
+	* src/dpf/interp.c: Likewise.

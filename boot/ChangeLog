@@ -1,0 +1,8 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* multiboot/main.c (init_cmdline): Don't use ambiguous assignment.
+
+	* boot_start.c (boot_start): Use adjacent string constants instead
+	of multi-line string literal.
+	* net/gdt.c (gdt_load): Likewise.
+	* net/loadkernel.c (loadkernel): Likewise.

@@ -1,0 +1,4 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/nullpointer.c (setup_pointer_trap): __FUNCTION__ is used as
+	constant variable, not as string literal.

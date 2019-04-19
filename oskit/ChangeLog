@@ -1,0 +1,53 @@
+2003-05-30  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/pc/pic.h (PIC_DELAY): Fake argument of this fake definition
+	is removed.
+
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/pc/pic.h (PIC_DELAY): Fake definition.
+
+	* x86/pc/i16_bios.h: <oskit/c/stdlib.h> is included.
+	(i16_bios_warm_boot): Declare the function as OSKIT_NORETURN and
+	call abort () at end of it.
+	(i16_bios_cold_boot): Likewise.
+	(i16_bios_copy_ext_mem): 
+
+	* x86/pc/base_irq.h: Move definitions of BASE_IRQ_SOFTINT_CLEARED
+	and BASE_IRQ_SOFTINT_DISABLED earlier in the file.
+
+	* c/stdio.h: #undef __P before #define.
+
+	* x86/i16.h: Use adjacent string constants instead of multi-line
+	string literal.
+	* x86/paging.h (paging_enable, paging_disable): Likewise.
+	* x86/pc/i16_bios.h (i16_bios_copy_ext_mem): Likewise.
+	(i16_bios_cold_boot, i16_bios_warm_boot): Likewise.
+	* x86/pc/i16_dos.h: Likewise.
+	* x86/pmode.h (i16_enter_pmode, i16_leave_pmode): Likewise.
+	* x86/proc_reg.h (get_eflags, set_eflags): Likewise.
+	(flush_instr_queue): Likewise.
+
+2003-03-09  Joachim Nilsson  <joachim.nilsson@vmlinux.org>
+
+	* io/skbufio.h (sk_buff): New member, user.
+
+	* dev/linux_ethernet.h: Added a few new Linux 2.2.22 NIC's.
+	Most of these drivers have FreeBSD counterparts. Therefore
+	I've commented them out to avoid collision. 
+
+	Also, new probe order as per Linux 2.2.22.
+
+2003-01-24  Daniel Wagner  <wagi@gmx.ch>
+
+	* dev/stream.h: New file, contributed by Roland McGrath 
+	<roland@frob.com>.
+
+2003-01-16  Derek Davies <ddavies@ddavies.net>
+
+	* dev/GUID: Added oskit_entropy and oskit_entropychannel GUIDs.
+	* dev/entropy.h: New file.
+	* dev/entropy_channel.h: New file.
+	* dev/entropy_stats.h: New file.
+	* dev/linux.h: Added prototypes for entropy initialization routines.
+	* dev/linux_entropy.h: New file.

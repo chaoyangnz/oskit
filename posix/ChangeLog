@@ -1,0 +1,3 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* sys/sigaction.c: Add extern libc_sendsig_init.

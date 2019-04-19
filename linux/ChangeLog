@@ -1,0 +1,140 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* src/include/linux/genhd.h (ptype): Extra semicolon.
+	* src/include/linux/signal.h (siginitset): Likewise.
+	(siginitsetinv): Likewise.
+
+	* src/drivers/scsi/53c7,8xx.h (patch_dsa_32): Remove bogus ##.
+
+	* src/drivers/block/ide-cd.h: Don't use __u8 and short
+	simultaneously.
+
+	* shared/libc/vsprintf.c (number): Add curly braces to avoid
+	warnings.
+
+	* fs/time.c (fs_linux_current_time): Declare gettimeofday as
+	extern.
+
+	* shared/x86/s_intr.c (linux_save_flags_cli): Use adjacent string
+	constants instead of multi-line string literal.
+	(linux_save_flags_cli): Likewise.
+	* src/include/asm-i386/floppy.h (floppy_hardint)
+	[!NO_FLOPPY_ASSEMBLER]: Likewise.
+
+	* dev/softintr.c (linux_softintr_init): __FUNCTION__ is used as
+	constant variable, not as string literal.
+	* fs/types.h (VERIFY_OR_PANIC): Likewise.
+
+2003-04-23  Derek Davies <ddavies@ddavies.net>
+
+	* linux/dev/entropy.c: Fix OSKit/Mach integration bugs by not
+	calling unix process lock/unlock calls.  Fix unintended sharing of
+	'dev_base' static from net.c by renaming.  Ensure entropy pool is a
+	singleton by guarding the probe function.
+	
+	* src/drivers/char/random.c: Get rid of losing fs_linux_current_time def,
+	since it breaks linkage.  Thanks to Joachim for his patient help.
+
+2003-04-23  Joachim Nilsson  <joachim.nilsson@vmlinux.org>
+
+	* fs/TODO: New entry.
+	
+	* fs/glue.c: Events are now Global Events, even in the OSKit
+	glue code. Missed during upgrade from 2.2.12 to 2.2.22, thanks to
+	ddavies for bringing this to my attention.
+
+	* shared/s_init.c: num_physpages needs to be declared, was missing
+	even from the original OSKit sources. Missed during upgrade,
+	thanks to ddavies for bringing this to my attention.
+	
+	* src/include/linux/pagemap.h: More of that "page cache crap we
+	don't use". Missed during upgrade, thanks to ddavies for bringing
+	this to my attention.
+
+2003-03-09  Joachim Nilsson  <joachim.nilsson@vmlinux.org>
+
+	* src/drivers/net/: New Linux 2.2.22 drivers, see the file
+	oskit/dev/linux_ethernet.h for details on enabling them.
+
+	* src/drivers/net/3c515.c: New file.
+	* src/drivers/net/3c523.c: New file.
+	* src/drivers/net/3c523.h: New file.
+	* src/drivers/net/3c527.c: New file.
+	* src/drivers/net/3c527.h: New file.
+	* src/drivers/net/de600.c: New file.
+	* src/drivers/net/de620.c: New file.
+	* src/drivers/net/de620.h: New file.
+	* src/drivers/net/dmfe.c: New file.
+	* src/drivers/net/ne2k-pci.c: New file.
+	* src/drivers/net/pcnet32.c: New file.
+	* src/drivers/net/rtl8139.c: New file.
+	* src/drivers/net/sis900.c: New file.
+	* src/drivers/net/sis900.h: New file.
+	* src/drivers/net/tlan.c: New file.
+	* src/drivers/net/tlan.h: New file.
+	* src/drivers/net/via-rhine.c: New file.
+
+2003-03-08  Joachim Nilsson  <joachim.nilsson@vmlinux.org>
+
+	* src/: Upgrade of all the Linux drivers from 2.2.12 to 2.2.22.
+
+	* src/README: Updated to indicate Linux 2.2.22.
+	* dev/README: Dito.
+	* fs/README: Dito.
+	* README: Dito.
+
+	* dev/block_glue.c (get_request_latency): New function in 2.2.22
+	(blkelvget_ioctl): Dito. 
+	(blkelvset_ioctl): Dito.
+	(blkelv_ioctl): Dito.
+	(seek_to_not_starving_chunk): Dito.
+	(elevator_starve_rest_of_queue): Dito.
+	(elevator_queue): Dito.
+
+	* dev/global.h: Define new public function, FDEV_LINUX_blkelv_ioctl.
+
+	* fs/file.c (file_open): Minor updates from Linux 2.2.22
+	(dir_getdirentries): Dito.
+	
+	* fs/openfile.c (do_seek): Minor updates from Linux 2.2.22
+
+	* fs/global.h: Define new public variables and functions.
+
+2003-01-24  Daniel Wagner  <wagi@newton.monom.org>
+
+	* dev/init_all.c (oskit_linux_init_devs): Disabled 
+	oskit_linux_init_randompools call, since the implentation is missing.
+
+2003-01-16  Derek Davies <ddavies@ddavies.net>
+
+	* dev/GNUmakerules: Added entropy building environment.
+	* dev/entropy.c: New file.
+	* dev/entropy.h: New file.
+	* dev/entropy_channel.c: New file.
+	* dev/entropy_driver.h: New file.
+	* dev/entropy_impl.h: New file.
+	* dev/randompool.h: New file.
+	* dev/init_entropy.c: New file.
+	* dev/global.h: FDEV_LINUX appended to rand_initialize.
+	* dev/init_all.c (oskit_linux_init_devs): Init randompools.
+	* dev/irq.c (linux_intr): Call the randomness interrupt
+	handler.
+	* dev/misc.c (add_blkdev_randomness): Function removed.
+	* shared/s_init.c (oskit_linux_init): Add new capability to
+	boot_cpu_data.x86_capability.
+	* src/drivers/char/random.c: New file, from linux 2.2.12.
+	* src/drviers/net/ne.c (__initfunc): Enable ne as random
+	source.
+	* src/include/asm-i386/processor.h: Added x86_capability member to
+	struct cpuinfo_x86.
+	* src/include/linux/random.h [OSKIT]: Use oskit_u32_t rather than
+	__u32 as type for member buf of struct rand_pool_info.
+	* src/include/linux/sched.h [OSKIT_FS]: Added member need_reshed
+	to struct task_struct.
+
+2003-01-06  Daniel Wagner  <wagi@gmx.ch>
+
+	* src/drivers/net/eepro.c (eepro_probe1): Remove debugging output.  
+	(From the Debian BTS #115359)
+	* dev/block.c (blkio_read): Fix linux block device code.  (From the
+	Debian BTS #141525)

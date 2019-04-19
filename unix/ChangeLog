@@ -1,0 +1,12 @@
+2003-05-18  Ognyan Kulev  <login@localhost>
+
+	* irq.c: Added curly braces.
+	(libc_sendsig_init): Cast argument to the exact type.
+	(oskitunix_set_signal_handler): __FUNCTION__ is used as constant
+	variable, not as string literal.
+	(oskitunix_set_signal_handler): Cast assignment to the exact
+	type.
+
+2003-01-06  Daniel Wagner  <wagi@gmx.ch>
+
+	* linux/sbrk-hack.c: Remove hack.  (From the Debian BTS #98904)

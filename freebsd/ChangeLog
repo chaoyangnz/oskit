@@ -1,0 +1,45 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* shared/kern_synch.c (tsleep): Explicit int type of S.
+
+	* shared/glue.h (OSKIT_FREEBSD_DESTROY_CURPROC): Use osenv_panic()
+	instead of panic().
+	(OSKIT_FREEBSD_CHECK_CURPROC): Likewise.
+
+	* net/start_if.c (oskit_freebsd_net_open_ether_if) 
+	(oskit_freebsd_net_prepare_ether_if): 
+
+	* net/bsdnet_mib_tcp.c (xlate_tcpconn_state): Extra semicolon.
+
+	* libc/glue/panic.c (panic): Add extern dump_stack_trace.
+
+	* dev/char.c: <oskit/c/string.h> is included.
+	* dev/isa.c: Likewise.
+	* net/bsdnet_com.c: Likewise.
+	* net/bsdnet_mib_ip.c: Likewise.
+
+	* dev/GNUmakerules (OSKIT_CFLAGS): Don't use built-ins printf and
+	vprintf.
+
+	* 3.x/shared/swi.c (swi_init): __FUNCTION__ is used as constant
+	variable, not as string literal.
+	* net/bsdnet_driver.c (bsdnet_driver_ioctl): Likewise.
+	* net/mbuf_buf_io.c (bufio_read, bufio_write): Likewise.
+	* net/start_first_if.c (oskit_freebsd_net_open_first_ether_if):
+	Likewise.
+	* net/start_if.c (oskit_freebsd_net_open_ether_if): Likewise.
+	(oskit_freebsd_net_prepare_ether_if): Likewise.
+	* shared/defaults.c (pfind, psignal, gsignal): Likewise.
+
+	* 3.x/shared/shutdown.c (at_shutdown): Proper cast of printf
+	arguments.
+
+	* 3.x/shared/pmap.c (pmap_mapdev): Proper cast of the return
+	value.
+
+	* 3.x/shared/init_main.c: extern swi_init() returns int.
+
+	* 3.x/shared/defaults.c (pfind, psignal, gsignal, log):
+	__FUNCTION__ is used as constant variable, not as string literal.
+
+

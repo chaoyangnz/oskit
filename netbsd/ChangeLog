@@ -1,0 +1,10 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* fs/hashtab.c (hashtab_map): Extra token at end of #endif
+	directive is put in comment.
+	(hashtab_map_remove_on_error): Likewise.
+
+	* fs/glue.c (microtime): Add extern gettimeofday.
+
+	* fs/fs_glue.h: <oskit/c/string.h> is included.
+

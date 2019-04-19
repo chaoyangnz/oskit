@@ -1,0 +1,16 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/timer_pit.c (osenv_timer_pit_init): __FUNCTION__ is used as
+	constant variable, not as string literal.
+
+	* x86/isa_bus.c (pnp_check): Use adjacent string constants instead
+	of multi-line string literal.
+
+	* x86/bios32.c (oskit_bios32_find_service): Extra * character is
+	added in indirect lcall.
+
+2003-01-24  Daniel Wagner  <wagi@gmx.ch>
+
+	* init.c (oskit_dev_init): Store osenv in global variable 
+	oskit_dev_osenv.  Contributed by Roland McGrath <roland@frob.com>.
+

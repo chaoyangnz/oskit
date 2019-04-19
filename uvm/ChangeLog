@@ -1,0 +1,27 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* uvm/x86/oskit_uvm_redzone.c (double_fault_handler): Add extern
+	tss_dump_stack_trace.
+
+	* uvm/GNUmakerules (CFLAGS): Add -fno-builtin-printf.
+
+	* sproc/sproc_elf_loader.c (read_exec_helper): __FUNCTION__ is
+	used as constant variable, not as string literal.
+	* sproc/x86/sproc_switch.c (oskit_sproc_switch): Likewise.
+	* sproc/x86/sproc_syscall.c (oskit_sproc_syscall_handler): Likewise.
+	* uvm/kern_synch.c (oskit_uvm_sleep, oskit_uvm_wakeup): Likewise.
+	* uvm/mem.c (osenv_mem_get_virt): Likewise.
+	* uvm/oskit_mem.c (mem_realloc): Likewise.
+	* uvm/oskit_mem_map_phys.c (oskit_uvm_mem_map_phys): Likewise.
+	* uvm/oskit_uvm_glue.c (uvm_gettimeofday): Likewise.
+	* uvm/oskit_uvm_pager.c (blkio_detach, blkio_get): Likewise.
+	* uvm/oskit_uvm_posix.c (mprotect): Likewise.
+	* uvm/oskit_uvm_swap.inc (oskit_uvm_swap_off): Likewise. 
+	(oskit_sw_reg_strategy): Likewise.
+	* uvm/x86/oskit_uvm_pfault.c (oskit_uvm_pfault_handler):
+	Likewise.
+	* uvm/x86/oskit_uvm_redzone.c (oskit_uvm_redzone_init): Likewise.
+
+	* netbsd/sys/kern/subr_extent.c (extent_alloc_subregion1): Use
+	adjacent string constants instead of multi-line string literal.
+	* sproc/x86/sproc_switch.c (oskit_sproc_switch): Likewise.

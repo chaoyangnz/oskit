@@ -1,0 +1,12 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* gensym.awk: Use adjacent string constants instead of multi-line
+	string literal in generated output.
+
+2003-01-24  Daniel Wagner  <wagi@newton.monom.org>
+
+	* modules.x86.pc: Added entropy test kernels to the build.
+
+2003-01-16  Derek Davies <ddavies@ddavies.net>
+
+	* modules.x86.pc: Added linux 2.2.12 random device.

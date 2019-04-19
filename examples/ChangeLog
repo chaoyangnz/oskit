@@ -1,0 +1,48 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/timer_com.c (handler): Explicit int type for SEC.
+	* x86/threads/semtest.c (main): Explicit int cast of thread id.
+
+	* x86/threads/http_proxy.c (deathwatch): Extra semicolon.
+
+	* x86/sproc/user_mem.c: <oskit/c/string.h> is included.
+	* x86/sproc/usermain_malloc.c: Likewise.
+	* x86/sproc/user_crt.c: <oskit/c/stdlib.h> is included.
+
+	* x86/more/netbsd_fs_posix.c (CHECK): __FUNCTION__ is used as
+	constant variable, not as string literal.
+	* x86/more/select.c (CHECK): Likewise.
+	* x86/osenv_memdebug.c (mem_release): Likewise.
+	* x86/shared/direct_console.c (our_exit): Likewise.
+	* x86/shared/dols.c (dols) Likewise.
+	* x86/more/fsbmodmount.c (CHECK, CHECK0): Likewise.
+
+	* x86/more/mmap_dev_mem.c (main): Return (int)0.
+	* x86/more/spf.c (main): Likewise.
+	* x86/more/stream_netio.c (main): Likewise.
+	* x86/more/uspf.c (main): Likewise.
+	* x86/more/fsbmodmount.c (main): Likewise.
+	* x86/memfstest1.c (main): Likewise.
+	* x86/bmodfs.c (main): Likewise.
+
+	* x86/more/memtest.c (testmem): Add extern trygetchar.
+	* x86/bmodfs.c (main): Add extern start_fs_native_bmod.
+
+2003-01-24  Daniel Wagner  <wagi@gmx.ch>
+
+	* x86/GNUmakerules (i8042): New target.
+	* x86/i8042.c (main): New file.
+	Contributed by Roland McGrath <roland@frob.com>
+
+	* x86/GNUmakerules: Removed rndtest and rndunittest target.  These 
+	kernels are now build in the entropy directory.
+	* x86/entropy/GNUmakerules: New file.
+	* x86/entropy/GNUmakefile.in: New file.
+	
+2003-01-16  Derek Davies <ddavies@ddavies.net>
+
+	* x86/GNUmakerules: Added instructions to build rndtest and rndunittest
+	example kernels.
+	* x86/entropy/rndtest.c: New file.
+	* x86/entropy/rndunittest.c: New file.
+

@@ -1,0 +1,4 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/dos.S: Extra token at end of #endif directive is put in
+	comment.

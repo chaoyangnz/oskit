@@ -1,0 +1,3 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* stdlib/strtod.c: Use parenthesis to avoid warnings.

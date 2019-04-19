@@ -1,0 +1,5 @@
+- getdirentries memory alloc issue
+	should use the COM allocator.  Currently just uses
+	"malloc"
+- look for XXX's
+- Update global.h with high_mem and num_physpages? /Joachim

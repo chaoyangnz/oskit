@@ -1,0 +1,9 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* svgalib/oskit/s_intr.c (linux_save_flags): Use adjacent string
+	constants instead of multi-line string literal.
+
+	* svgalib/oskit/config.c (ML_GETINT): Bogus use of ## is removed.
+	(process_option) [OSKIT]: Label leave: is defined only when OSKIT
+	macro is defined.
+

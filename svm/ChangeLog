@@ -1,0 +1,6 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/svm_redzone.c (double_fault_handler): Add extern
+	tss_dump_stack_trace.
+
+	* svm_pageout.c (svm_pageout): Extra semicolon.

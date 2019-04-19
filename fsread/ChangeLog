@@ -1,0 +1,6 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* disk_inode_ffs.h: Extra token at end of #endif directive is put
+	in comment.
+	* ext2_file_io.c (fsread_ext2_open): Likewise.
+	* ffs_file_io.c (fsread_ffs_open): Likewise.

@@ -1,0 +1,16 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* pthread_mutex.c (pthread_mutex_lock): Extra semicolon.
+
+	* pthread_internal.h (DPRINTF) [THREADS_DEBUG]: __FUNCTION__ is
+	used as constant variable, not as string literal.
+	* pthread_scheduler.c: Likewise.
+
+	* pthread_cancel.c (pthread_cancel): Add extern
+	oskit_sem_wait_cancel.
+
+	* cpuinherit/pthread_lotto.c: Extra token at end of #endif
+	directive is put in comment.
+	* cpuinherit/pthread_ratemono.c: Likewise.
+	* cpuinherit/pthread_rootsched.c: Likewise.
+	* cpuinherit/pthread_stride.c: Likewise.

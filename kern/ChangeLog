@@ -1,0 +1,40 @@
+2003-05-18  Ognyan Kulev  <ogi@fmi.uni-sofia.bg>
+
+	* x86/tss_dump_stack_trace.c (tss_dump_stack_trace): Cast of
+	printf argument.
+
+	* x86/pc/reset.c: <oskit/c/stdlib.h> is included.
+
+	* x86/pc/i16/i16_raw.S (raw_atexit): Extra * character is added in
+	indirect ljmp.
+
+	* x86/pc/base_multiboot_init_mem.c (base_multiboot_init_mem):
+	Extra semicolon.
+
+	* x86/multiboot_info_dump.c (multiboot_info_dump): Comment about
+	mysterious %b printf specifier.
+
+	* x86/dos/i16/i16_dos_mem.c: Extra token at end of #endif
+	directive is put in comment.
+	* x86/dos/i16/i16_vcpi.c: Likewise.
+	* x86/dos/i16/i16_xms.c: Likewise.
+
+	* x86/dos/i16/i16_dos_main.c (start32): Declare as
+	OSKIT_NORETURN.
+	* x86/pc/i16/i16_bios_main.c (start32): Likewise.
+
+	* x86/dos/i16/i16_dos_main.c (i16_dos_main): Declare i16_init_vm
+	as extern.
+	* x86/pc/i16/i16_bios_main.c (i16_bios_main): Declare i16_init_vm
+	as extern.
+
+	* x86/base_gdt_load.c (base_gdt_load): Use adjacent string
+	constants instead of multi-line string literal.
+	* x86/cpuid.c (get_cache_config, cpuid): Likewise.
+	* x86/dos/i16/i16_dos_mem.c (i16_code_copy): Likewise.
+	(i16_code_check): Likewise.
+	* x86/dos/i16/i16_vcpi.c (i16_vcpi_switch_to_pmode): Likewise.
+	(i16_vcpi_switch_to_real_mode): Likewise.
+	(i16_vcpi_check): Likewise.
+	* x86/dos/i16/i16_xms.c (i16_xms_check): Likewise.
+	* x86/pc/i16/i16_ext_mem.c (i16_ext_mem_check): Likewise.
