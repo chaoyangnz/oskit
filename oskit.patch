@@ -1,0 +1,1364 @@
+diff -rN -u old-build-tree/oskit/GNUmakerules new-build-tree/oskit/GNUmakerules
+--- old-build-tree/oskit/GNUmakerules	2003-01-06 21:58:16.000000000 +0100
++++ new-build-tree/oskit/GNUmakerules	2006-11-23 19:23:31.000000000 +0100
+@@ -70,12 +70,11 @@
+ # We prefix these with OSKIT_ rather than using the "normal" variables
+ # so that you can override the normal variables on the make command line
+ # in order to add options (e.g. 'make CFLAGS=-save-temps').
+-# The -I- flag divides the -I line:
+-#	-I flags before -I- are searched for #include "file" only, not <file>
+-#	-I flags after -I- are searched for all include files.
+-OSKIT_CPPFLAGS	+= -MD $(DEFINES) -I. $(addprefix -I,$(SRCDIRS)) \
+-		    $(addprefix -I,$(MOSTLY_SRCDIRS)) \
+-		    -I- $(addprefix -I,$(INCDIRS)) -nostdinc
++#	-iquote dirs are searched for #include "file" only, not <file>
++#	-I dirs are searched for all include files.
++OSKIT_CPPFLAGS	+= -MD $(DEFINES) -I. $(addprefix -iquote,$(SRCDIRS)) \
++		    $(addprefix -iquote,$(MOSTLY_SRCDIRS)) \
++		    $(addprefix -I,$(INCDIRS)) -nostdinc
+ OSKIT_CFLAGS	+= $(OSKIT_CPPFLAGS) -Wall $(OSKIT_FFLAGS)
+ OSKIT_LDFLAGS	+= $(addprefix -L,$(LIBDIRS))
+ 
+diff -rN -u old-build-tree/oskit/dev/osenv_sleep.c new-build-tree/oskit/dev/osenv_sleep.c
+--- old-build-tree/oskit/dev/osenv_sleep.c	2003-01-06 21:58:39.000000000 +0100
++++ new-build-tree/oskit/dev/osenv_sleep.c	2006-11-23 19:39:36.000000000 +0100
+@@ -85,13 +85,14 @@
+ 	osenv_wakeup(sr, wakeup_status);
+ }
+ 
++static oskit_error_t sleep_object_create(oskit_sleep_t **);
++
+ /*
+  * function to create a sleep object.
+  */
+ static OSKIT_COMDECL
+ simple_sleep_create(oskit_osenv_sleep_t *b, oskit_sleep_t **out_sleep)
+ {
+-	static oskit_error_t sleep_object_create(oskit_sleep_t **);
+ 
+ 	return sleep_object_create(out_sleep);
+ }
+diff -rN -u old-build-tree/oskit/freebsd/3.x/shared/defaults.c new-build-tree/oskit/freebsd/3.x/shared/defaults.c
+--- old-build-tree/oskit/freebsd/3.x/shared/defaults.c	2003-05-21 09:47:10.000000000 +0200
++++ new-build-tree/oskit/freebsd/3.x/shared/defaults.c	2006-11-23 20:18:16.000000000 +0100
+@@ -101,12 +101,12 @@
+  */
+ int subyte          (void *base, int byte)
+ {
+-	return (int)((char *)base = (char)byte);
++	return (int)(((char *)base)[0] = (char)byte);
+ }
+ 
+ int suibyte         (void *base, int byte)
+ {
+-	return (int)((char *)base = (char)byte);
++	return (int)(((char *)base)[0] = (char)byte);
+ }
+ 
+ /* ---------------------------------------------------------------------- */
+diff -rN -u old-build-tree/oskit/freebsd/3.x/shared/swi.c new-build-tree/oskit/freebsd/3.x/shared/swi.c
+--- old-build-tree/oskit/freebsd/3.x/shared/swi.c	2003-05-21 09:47:10.000000000 +0200
++++ new-build-tree/oskit/freebsd/3.x/shared/swi.c	2006-11-23 20:22:54.000000000 +0100
+@@ -73,12 +73,13 @@
+  */
+ static int swi_vector;
+ 
++static void	swi_softintr_handler(void *arg);
++extern void	bsdnet_net_softnet(void);
++
+ void
+ swi_init(void)
+ {
+ 	int		err;
+-	static void	swi_softintr_handler(void *arg);
+-	extern void	bsdnet_net_softnet(void);
+ 
+ 	err = osenv_softirq_alloc_vector(&swi_vector);
+ 	if (err)
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/lib/libc/net/ns_ntoa.c new-build-tree/oskit/freebsd/3.x/src/lib/libc/net/ns_ntoa.c
+--- old-build-tree/oskit/freebsd/3.x/src/lib/libc/net/ns_ntoa.c	2003-01-06 21:59:44.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/lib/libc/net/ns_ntoa.c	2006-11-23 20:25:26.000000000 +0100
+@@ -39,6 +39,8 @@
+ #include <netns/ns.h>
+ #include <stdio.h>
+ 
++static char *spectHex();
++
+ char *
+ ns_ntoa(addr)
+ 	struct ns_addr addr;
+@@ -50,7 +52,6 @@
+ 	char *cp2;
+ 	register u_char *up = addr.x_host.c_host;
+ 	u_char *uplim = up + 6;
+-	static char *spectHex();
+ 
+ 	net.net_e = addr.x_net;
+ 	sprintf(obuf, "%lx", (u_long)ntohl(net.long_e));
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/lib/libc/stdio/vfprintf.c new-build-tree/oskit/freebsd/3.x/src/lib/libc/stdio/vfprintf.c
+--- old-build-tree/oskit/freebsd/3.x/src/lib/libc/stdio/vfprintf.c	2003-01-06 22:00:01.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/lib/libc/stdio/vfprintf.c	2006-11-24 13:23:04.000000000 +0100
+@@ -39,7 +39,7 @@
+ static char sccsid[] = "@(#)vfprintf.c	8.1 (Berkeley) 6/4/93";
+ #endif
+ static const char rcsid[] =
+-		"$Id: vfprintf.c,v 1.20.2.1 1999/05/04 13:06:29 dt Exp $";
++		"$\Id: vfprintf.c,v 1.9 1996/06/22 10:34:02 jraynard Exp $";
+ #endif /* LIBC_SCCS and not lint */
+ 
+ /*
+@@ -63,7 +63,10 @@
+ 
+ #include "local.h"
+ #include "fvwrite.h"
+-#include "libc_private.h"
++#ifdef _THREAD_SAFE
++#include <pthread.h>
++#include "pthread_private.h"
++#endif
+ 
+ /* Define FLOATING_POINT to get floating point. */
+ #define	FLOATING_POINT
+@@ -72,8 +75,6 @@
+ static int	__sbprintf __P((FILE *, const char *, va_list));
+ static char *	__ultoa __P((u_long, char *, int, int, char *));
+ static char *	__uqtoa __P((u_quad_t, char *, int, int, char *));
+-static void	__find_arguments __P((const char *, va_list, void ***));
+-static void	__grow_type_table __P((int, unsigned char **, int *));
+ 
+ /*
+  * Flush out all the vectors defined by the given uio,
+@@ -273,7 +274,6 @@
+ 
+ #endif /* FLOATING_POINT */
+ 
+-#define STATIC_ARG_TBL_SIZE 8           /* Size of static argument table. */
+ 
+ /*
+  * Flags used during conversion.
+@@ -281,7 +281,7 @@
+ #define	ALT		0x001		/* alternate form */
+ #define	HEXPREFIX	0x002		/* add 0x or 0X prefix */
+ #define	LADJUST		0x004		/* left adjustment */
+-#define	LONGDBL		0x008		/* long double */
++#define	LONGDBL		0x008		/* long double; unimplemented */
+ #define	LONGINT		0x010		/* long integer */
+ #define	QUADINT		0x020		/* quad integer */
+ #define	SHORTINT	0x040		/* short integer */
+@@ -295,7 +295,7 @@
+ {
+ 	register char *fmt;	/* format string */
+ 	register int ch;	/* character from fmt */
+-	register int n, n2;	/* handy integer (short term usage) */
++	register int n;		/* handy integer (short term usage) */
+ 	register char *cp;	/* handy char pointer (short term usage) */
+ 	register struct __siov *iovp;/* for PRINT macro */
+ 	register int flags;	/* flags as above */
+@@ -317,17 +317,12 @@
+ 	int dprec;		/* a copy of prec if [diouxX], 0 otherwise */
+ 	int realsz;		/* field size expanded by dprec, sign, etc */
+ 	int size;		/* size of converted field or string */
+-	int prsize;             /* max size of printed field */
+ 	char *xdigs;		/* digits for [xX] conversion */
+ #define NIOV 8
+ 	struct __suio uio;	/* output information: summary */
+ 	struct __siov iov[NIOV];/* ... and individual io vectors */
+ 	char buf[BUF];		/* space for %c, %[diouxX], %[eEfgG] */
+ 	char ox[2];		/* space for 0x hex-prefix */
+-        void **argtable;        /* args, built due to positional arg */
+-        void *statargtable [STATIC_ARG_TBL_SIZE];
+-        int nextarg;            /* 1-based argument index */
+-        va_list orgap;          /* original argument pointer */
+ 
+ 	/*
+ 	 * Choose PADSIZE to trade efficiency vs. size.  If larger printf
+@@ -370,72 +365,40 @@
+ 	iovp = iov; \
+ }
+ 
+-        /*
+-         * Get the argument indexed by nextarg.   If the argument table is
+-         * built, use it to get the argument.  If its not, get the next
+-         * argument (and arguments must be gotten sequentially).
+-         */
+-#define GETARG(type) \
+-        ((argtable != NULL) ? *((type*)(argtable[nextarg++])) : \
+-            (nextarg++, va_arg(ap, type)))
+-
+ 	/*
+ 	 * To extend shorts properly, we need both signed and unsigned
+ 	 * argument extraction methods.
+ 	 */
+ #define	SARG() \
+-	(flags&LONGINT ? GETARG(long) : \
+-	    flags&SHORTINT ? (long)(short)GETARG(int) : \
+-	    (long)GETARG(int))
++	(flags&LONGINT ? va_arg(ap, long) : \
++	    flags&SHORTINT ? (long)(short)va_arg(ap, int) : \
++	    (long)va_arg(ap, int))
+ #define	UARG() \
+-	(flags&LONGINT ? GETARG(u_long) : \
+-	    flags&SHORTINT ? (u_long)(u_short)GETARG(int) : \
+-	    (u_long)GETARG(u_int))
+-
+-        /*
+-         * Get * arguments, including the form *nn$.  Preserve the nextarg
+-         * that the argument can be gotten once the type is determined.
+-         */
+-#define GETASTER(val) \
+-        n2 = 0; \
+-        cp = fmt; \
+-        while (is_digit(*cp)) { \
+-                n2 = 10 * n2 + to_digit(*cp); \
+-                cp++; \
+-        } \
+-        if (*cp == '$') { \
+-            	int hold = nextarg; \
+-                if (argtable == NULL) { \
+-                        argtable = statargtable; \
+-                        __find_arguments (fmt0, orgap, &argtable); \
+-                } \
+-                nextarg = n2; \
+-                val = GETARG (int); \
+-                nextarg = hold; \
+-                fmt = ++cp; \
+-        } else { \
+-		val = GETARG (int); \
+-        }
+-        
++	(flags&LONGINT ? va_arg(ap, u_long) : \
++	    flags&SHORTINT ? (u_long)(u_short)va_arg(ap, int) : \
++	    (u_long)va_arg(ap, u_int))
+ 
+-	FLOCKFILE(fp);
++#ifdef _THREAD_SAFE
++	_thread_flockfile(fp,__FILE__,__LINE__);
++#endif
+ 	/* sorry, fprintf(read_only_file, "") returns EOF, not 0 */
+ 	if (cantwrite(fp)) {
+-		FUNLOCKFILE(fp);
++#ifdef _THREAD_SAFE
++		_thread_funlockfile(fp);
++#endif
+ 		return (EOF);
+ 	}
+ 
+ 	/* optimise fprintf(stderr) (and other unbuffered Unix files) */
+ 	if ((fp->_flags & (__SNBF|__SWR|__SRW)) == (__SNBF|__SWR) &&
+ 	    fp->_file >= 0) {
+-		FUNLOCKFILE(fp);
++#ifdef _THREAD_SAFE
++		_thread_funlockfile(fp);
++#endif
+ 		return (__sbprintf(fp, fmt0, ap));
+ 	}
+ 
+ 	fmt = (char *)fmt0;
+-        argtable = NULL;
+-        nextarg = 1;
+-        orgap = ap;
+ 	uio.uio_iov = iovp = iov;
+ 	uio.uio_resid = 0;
+ 	uio.uio_iovcnt = 0;
+@@ -448,10 +411,6 @@
+ 		for (cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt++)
+ 			/* void */;
+ 		if ((n = fmt - cp) != 0) {
+-			if ((unsigned)ret + n > INT_MAX) {
+-				ret = EOF;
+-				goto error;
+-			}
+ 			PRINT(cp, n);
+ 			ret += n;
+ 		}
+@@ -486,8 +445,7 @@
+ 			 *	-- ANSI X3J11
+ 			 * They don't exclude field widths read from args.
+ 			 */
+-			GETASTER (width);
+-			if (width >= 0)
++			if ((width = va_arg(ap, int)) >= 0)
+ 				goto rflag;
+ 			width = -width;
+ 			/* FALLTHROUGH */
+@@ -499,7 +457,7 @@
+ 			goto rflag;
+ 		case '.':
+ 			if ((ch = *fmt++) == '*') {
+-				GETASTER (n);
++				n = va_arg(ap, int);
+ 				prec = n < 0 ? -1 : n;
+ 				goto rflag;
+ 			}
+@@ -525,15 +483,6 @@
+ 				n = 10 * n + to_digit(ch);
+ 				ch = *fmt++;
+ 			} while (is_digit(ch));
+-			if (ch == '$') {
+-				nextarg = n;
+-                        	if (argtable == NULL) {
+-                                	argtable = statargtable;
+-                                	__find_arguments (fmt0, orgap,
+-						&argtable);
+-				}
+-				goto rflag;
+-                        }
+ 			width = n;
+ 			goto reswitch;
+ #ifdef FLOATING_POINT
+@@ -545,16 +494,13 @@
+ 			flags |= SHORTINT;
+ 			goto rflag;
+ 		case 'l':
+-			if (flags & LONGINT)
+-				flags |= QUADINT;
+-			else
+-				flags |= LONGINT;
++			flags |= LONGINT;
+ 			goto rflag;
+ 		case 'q':
+ 			flags |= QUADINT;
+ 			goto rflag;
+ 		case 'c':
+-			*(cp = buf) = GETARG(int);
++			*(cp = buf) = va_arg(ap, int);
+ 			size = 1;
+ 			sign = '\0';
+ 			break;
+@@ -564,7 +510,7 @@
+ 		case 'd':
+ 		case 'i':
+ 			if (flags & QUADINT) {
+-				uqval = GETARG(quad_t);
++				uqval = va_arg(ap, quad_t);
+ 				if ((quad_t)uqval < 0) {
+ 					uqval = -uqval;
+ 					sign = '-';
+@@ -590,10 +536,9 @@
+ fp_begin:		if (prec == -1)
+ 				prec = DEFPREC;
+ 			if (flags & LONGDBL)
+-				/* XXX this loses precision. */
+-				_double = (double)GETARG(long double);
++				_double = (double)va_arg(ap, long double);
+ 			else
+-				_double = GETARG(double);
++				_double = va_arg(ap, double);
+ 			/* do this before tricky precision changes */
+ 			if (isinf(_double)) {
+ 				if (_double < 0)
+@@ -643,20 +588,20 @@
+ #endif /* FLOATING_POINT */
+ 		case 'n':
+ 			if (flags & QUADINT)
+-				*GETARG(quad_t *) = ret;
++				*va_arg(ap, quad_t *) = ret;
+ 			else if (flags & LONGINT)
+-				*GETARG(long *) = ret;
++				*va_arg(ap, long *) = ret;
+ 			else if (flags & SHORTINT)
+-				*GETARG(short *) = ret;
++				*va_arg(ap, short *) = ret;
+ 			else
+-				*GETARG(int *) = ret;
++				*va_arg(ap, int *) = ret;
+ 			continue;	/* no output */
+ 		case 'O':
+ 			flags |= LONGINT;
+ 			/*FALLTHROUGH*/
+ 		case 'o':
+ 			if (flags & QUADINT)
+-				uqval = GETARG(u_quad_t);
++				uqval = va_arg(ap, u_quad_t);
+ 			else
+ 				ulval = UARG();
+ 			base = 8;
+@@ -669,14 +614,14 @@
+ 			 * defined manner.''
+ 			 *	-- ANSI X3J11
+ 			 */
+-			ulval = (u_long)GETARG(void *);
++			ulval = (u_long)va_arg(ap, void *);
+ 			base = 16;
+ 			xdigs = "0123456789abcdef";
+ 			flags = (flags & ~QUADINT) | HEXPREFIX;
+ 			ch = 'x';
+ 			goto nosign;
+ 		case 's':
+-			if ((cp = GETARG(char *)) == NULL)
++			if ((cp = va_arg(ap, char *)) == NULL)
+ 				cp = "(null)";
+ 			if (prec >= 0) {
+ 				/*
+@@ -701,7 +646,7 @@
+ 			/*FALLTHROUGH*/
+ 		case 'u':
+ 			if (flags & QUADINT)
+-				uqval = GETARG(u_quad_t);
++				uqval = va_arg(ap, u_quad_t);
+ 			else
+ 				ulval = UARG();
+ 			base = 10;
+@@ -712,7 +657,7 @@
+ 		case 'x':
+ 			xdigs = "0123456789abcdef";
+ hex:			if (flags & QUADINT)
+-				uqval = GETARG(u_quad_t);
++				uqval = va_arg(ap, u_quad_t);
+ 			else
+ 				ulval = UARG();
+ 			base = 16;
+@@ -779,12 +724,6 @@
+ 		else if (flags & HEXPREFIX)
+ 			realsz += 2;
+ 
+-		prsize = width > realsz ? width : realsz;
+-		if ((unsigned)ret + prsize > INT_MAX) {
+-			ret = EOF;
+-			goto error;
+-		}
+-
+ 		/* right-adjusting blank padding */
+ 		if ((flags & (LADJUST|ZEROPAD)) == 0)
+ 			PAD(width - realsz, blanks);
+@@ -858,7 +797,7 @@
+ 			PAD(width - realsz, blanks);
+ 
+ 		/* finally, adjust ret */
+-		ret += prsize;
++		ret += width > realsz ? width : realsz;
+ 
+ 		FLUSH();	/* copy out the I/O vectors */
+ 	}
+@@ -867,336 +806,13 @@
+ error:
+ 	if (__sferror(fp))
+ 		ret = EOF;
+-	FUNLOCKFILE(fp);
+-        if ((argtable != NULL) && (argtable != statargtable))
+-                free (argtable);
++#ifdef _THREAD_SAFE
++	_thread_funlockfile(fp);
++#endif
+ 	return (ret);
+ 	/* NOTREACHED */
+ }
+ 
+-/*
+- * Type ids for argument type table.
+- */
+-#define T_UNUSED	0
+-#define T_SHORT		1
+-#define T_U_SHORT	2
+-#define TP_SHORT	3
+-#define T_INT		4
+-#define T_U_INT		5
+-#define TP_INT		6
+-#define T_LONG		7
+-#define T_U_LONG	8
+-#define TP_LONG		9
+-#define T_QUAD		10
+-#define T_U_QUAD	11
+-#define TP_QUAD		12
+-#define T_DOUBLE	13
+-#define T_LONG_DOUBLE	14
+-#define TP_CHAR		15
+-#define TP_VOID		16
+-
+-/*
+- * Find all arguments when a positional parameter is encountered.  Returns a
+- * table, indexed by argument number, of pointers to each arguments.  The
+- * initial argument table should be an array of STATIC_ARG_TBL_SIZE entries.
+- * It will be replaces with a malloc-ed on if it overflows.
+- */ 
+-static void
+-__find_arguments (fmt0, ap, argtable)
+-	const char *fmt0;
+-	va_list ap;
+-	void ***argtable;
+-{
+-	register char *fmt;	/* format string */
+-	register int ch;	/* character from fmt */
+-	register int n, n2;	/* handy integer (short term usage) */
+-	register char *cp;	/* handy char pointer (short term usage) */
+-	register int flags;	/* flags as above */
+-	int width;		/* width from format (%8d), or 0 */
+-	unsigned char *typetable; /* table of types */
+-	unsigned char stattypetable [STATIC_ARG_TBL_SIZE];
+-	int tablesize;		/* current size of type table */
+-	int tablemax;		/* largest used index in table */
+-	int nextarg;		/* 1-based argument index */
+-
+-	/*
+-	 * Add an argument type to the table, expanding if necessary.
+-	 */
+-#define ADDTYPE(type) \
+-	((nextarg >= tablesize) ? \
+-		__grow_type_table(nextarg, &typetable, &tablesize) : 0, \
+-	typetable[nextarg++] = type, \
+-	(nextarg > tablemax) ? tablemax = nextarg : 0)
+-
+-#define	ADDSARG() \
+-	((flags&LONGINT) ? ADDTYPE(T_LONG) : \
+-		((flags&SHORTINT) ? ADDTYPE(T_SHORT) : ADDTYPE(T_INT)))
+-
+-#define	ADDUARG() \
+-	((flags&LONGINT) ? ADDTYPE(T_U_LONG) : \
+-		((flags&SHORTINT) ? ADDTYPE(T_U_SHORT) : ADDTYPE(T_U_INT)))
+-
+-	/*
+-	 * Add * arguments to the type array.
+-	 */
+-#define ADDASTER() \
+-	n2 = 0; \
+-	cp = fmt; \
+-	while (is_digit(*cp)) { \
+-		n2 = 10 * n2 + to_digit(*cp); \
+-		cp++; \
+-	} \
+-	if (*cp == '$') { \
+-		int hold = nextarg; \
+-		nextarg = n2; \
+-		ADDTYPE (T_INT); \
+-		nextarg = hold; \
+-		fmt = ++cp; \
+-	} else { \
+-		ADDTYPE (T_INT); \
+-	}
+-	fmt = (char *)fmt0;
+-	typetable = stattypetable;
+-	tablesize = STATIC_ARG_TBL_SIZE;
+-	tablemax = 0; 
+-	nextarg = 1;
+-	memset (typetable, T_UNUSED, STATIC_ARG_TBL_SIZE);
+-
+-	/*
+-	 * Scan the format for conversions (`%' character).
+-	 */
+-	for (;;) {
+-		for (cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt++)
+-			/* void */;
+-		if (ch == '\0')
+-			goto done;
+-		fmt++;		/* skip over '%' */
+-
+-		flags = 0;
+-		width = 0;
+-
+-rflag:		ch = *fmt++;
+-reswitch:	switch (ch) {
+-		case ' ':
+-		case '#':
+-			goto rflag;
+-		case '*':
+-			ADDASTER ();
+-			goto rflag;
+-		case '-':
+-		case '+':
+-			goto rflag;
+-		case '.':
+-			if ((ch = *fmt++) == '*') {
+-				ADDASTER ();
+-				goto rflag;
+-			}
+-			while (is_digit(ch)) {
+-				ch = *fmt++;
+-			}
+-			goto reswitch;
+-		case '0':
+-			goto rflag;
+-		case '1': case '2': case '3': case '4':
+-		case '5': case '6': case '7': case '8': case '9':
+-			n = 0;
+-			do {
+-				n = 10 * n + to_digit(ch);
+-				ch = *fmt++;
+-			} while (is_digit(ch));
+-			if (ch == '$') {
+-				nextarg = n;
+-				goto rflag;
+-			}
+-			width = n;
+-			goto reswitch;
+-#ifdef FLOATING_POINT
+-		case 'L':
+-			flags |= LONGDBL;
+-			goto rflag;
+-#endif
+-		case 'h':
+-			flags |= SHORTINT;
+-			goto rflag;
+-		case 'l':
+-			if (flags & LONGINT)
+-				flags |= QUADINT;
+-			else
+-				flags |= LONGINT;
+-			goto rflag;
+-		case 'q':
+-			flags |= QUADINT;
+-			goto rflag;
+-		case 'c':
+-			ADDTYPE(T_INT);
+-			break;
+-		case 'D':
+-			flags |= LONGINT;
+-			/*FALLTHROUGH*/
+-		case 'd':
+-		case 'i':
+-			if (flags & QUADINT) {
+-				ADDTYPE(T_QUAD);
+-			} else {
+-				ADDSARG();
+-			}
+-			break;
+-#ifdef FLOATING_POINT
+-		case 'e':
+-		case 'E':
+-		case 'f':
+-		case 'g':
+-		case 'G':
+-			if (flags & LONGDBL)
+-				ADDTYPE(T_LONG_DOUBLE);
+-			else
+-				ADDTYPE(T_DOUBLE);
+-			break;
+-#endif /* FLOATING_POINT */
+-		case 'n':
+-			if (flags & QUADINT)
+-				ADDTYPE(TP_QUAD);
+-			else if (flags & LONGINT)
+-				ADDTYPE(TP_LONG);
+-			else if (flags & SHORTINT)
+-				ADDTYPE(TP_SHORT);
+-			else
+-				ADDTYPE(TP_INT);
+-			continue;	/* no output */
+-		case 'O':
+-			flags |= LONGINT;
+-			/*FALLTHROUGH*/
+-		case 'o':
+-			if (flags & QUADINT)
+-				ADDTYPE(T_U_QUAD);
+-			else
+-				ADDUARG();
+-			break;
+-		case 'p':
+-			ADDTYPE(TP_VOID);
+-			break;
+-		case 's':
+-			ADDTYPE(TP_CHAR);
+-			break;
+-		case 'U':
+-			flags |= LONGINT;
+-			/*FALLTHROUGH*/
+-		case 'u':
+-			if (flags & QUADINT)
+-				ADDTYPE(T_U_QUAD);
+-			else
+-				ADDUARG();
+-			break;
+-		case 'X':
+-		case 'x':
+-			if (flags & QUADINT)
+-				ADDTYPE(T_U_QUAD);
+-			else
+-				ADDUARG();
+-			break;
+-		default:	/* "%?" prints ?, unless ? is NUL */
+-			if (ch == '\0')
+-				goto done;
+-			break;
+-		}
+-	}
+-done:
+-	/*
+-	 * Build the argument table.
+-	 */
+-	if (tablemax >= STATIC_ARG_TBL_SIZE) {
+-		*argtable = (void **)
+-		    malloc (sizeof (void *) * (tablemax + 1));
+-	}
+-
+-	(*argtable) [0] = NULL;
+-	for (n = 1; n <= tablemax; n++) {
+-		switch (typetable [n]) {
+-		    case T_UNUSED:
+-			(*argtable) [n] = (void *) &va_arg (ap, int);
+-			break;
+-		    case T_SHORT:
+-			(*argtable) [n] = (void *) &va_arg (ap, int);
+-			break;
+-		    case T_U_SHORT:
+-			(*argtable) [n] = (void *) &va_arg (ap, int);
+-			break;
+-		    case TP_SHORT:
+-			(*argtable) [n] = (void *) &va_arg (ap, short *);
+-			break;
+-		    case T_INT:
+-			(*argtable) [n] = (void *) &va_arg (ap, int);
+-			break;
+-		    case T_U_INT:
+-			(*argtable) [n] = (void *) &va_arg (ap, unsigned int);
+-			break;
+-		    case TP_INT:
+-			(*argtable) [n] = (void *) &va_arg (ap, int *);
+-			break;
+-		    case T_LONG:
+-			(*argtable) [n] = (void *) &va_arg (ap, long);
+-			break;
+-		    case T_U_LONG:
+-			(*argtable) [n] = (void *) &va_arg (ap, unsigned long);
+-			break;
+-		    case TP_LONG:
+-			(*argtable) [n] = (void *) &va_arg (ap, long *);
+-			break;
+-		    case T_QUAD:
+-			(*argtable) [n] = (void *) &va_arg (ap, quad_t);
+-			break;
+-		    case T_U_QUAD:
+-			(*argtable) [n] = (void *) &va_arg (ap, u_quad_t);
+-			break;
+-		    case TP_QUAD:
+-			(*argtable) [n] = (void *) &va_arg (ap, quad_t *);
+-			break;
+-		    case T_DOUBLE:
+-			(*argtable) [n] = (void *) &va_arg (ap, double);
+-			break;
+-		    case T_LONG_DOUBLE:
+-			(*argtable) [n] = (void *) &va_arg (ap, long double);
+-			break;
+-		    case TP_CHAR:
+-			(*argtable) [n] = (void *) &va_arg (ap, char *);
+-			break;
+-		    case TP_VOID:
+-			(*argtable) [n] = (void *) &va_arg (ap, void *);
+-			break;
+-		}
+-	}
+-
+-	if ((typetable != NULL) && (typetable != stattypetable))
+-		free (typetable);
+-}
+-
+-/*
+- * Increase the size of the type table.
+- */
+-static void
+-__grow_type_table (nextarg, typetable, tablesize)
+-	int nextarg;
+-	unsigned char **typetable;
+-	int *tablesize;
+-{
+-	unsigned char *oldtable = *typetable;
+-	int newsize = *tablesize * 2;
+-
+-	if (*tablesize == STATIC_ARG_TBL_SIZE) {
+-		*typetable = (unsigned char *)
+-		    malloc (sizeof (unsigned char) * newsize);
+-		bcopy (oldtable, *typetable, *tablesize);
+-	} else {
+-		*typetable = (unsigned char *)
+-		    reallocf (typetable, sizeof (unsigned char) * newsize);
+-
+-	}
+-	memset (&typetable [*tablesize], T_UNUSED, (newsize - *tablesize));
+-
+-	*tablesize = newsize;
+-}
+-
+-
+ #ifdef FLOATING_POINT
+ 
+ extern char *__dtoa __P((double, int, int, int *, int *, char **));
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/lib/libc/stdlib/strhash.c new-build-tree/oskit/freebsd/3.x/src/lib/libc/stdlib/strhash.c
+--- old-build-tree/oskit/freebsd/3.x/src/lib/libc/stdlib/strhash.c	2003-01-06 22:00:06.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/lib/libc/stdlib/strhash.c	2006-11-23 20:26:40.000000000 +0100
+@@ -256,6 +256,8 @@
+  * 4) Otherwise just return 0.
+  *
+  */
++static int assign_key();
++
+ void *
+ hash_search(hash_table *table, caddr_t key, void *datum,
+ 	    void (*replace_func)())
+@@ -275,7 +277,6 @@
+     else{
+ 	if (datum){
+ 
+-	    static int assign_key();
+ 
+ 	    hash_node *new = (hash_node *)malloc(sizeof(hash_node));
+ 
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/sys/i386/include/cpufunc.h new-build-tree/oskit/freebsd/3.x/src/sys/i386/include/cpufunc.h
+--- old-build-tree/oskit/freebsd/3.x/src/sys/i386/include/cpufunc.h	2003-01-06 22:01:46.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/sys/i386/include/cpufunc.h	2006-11-23 20:21:59.000000000 +0100
+@@ -94,6 +94,7 @@
+ #endif /* !OSKIT */
+ }
+ 
++#ifndef _OSKIT_C_STRING_H_
+ #define	HAVE_INLINE_FFS
+ 
+ static __inline int
+@@ -114,6 +115,7 @@
+ 			 : "=r" (result) : "0" (mask));
+ 	return (result);
+ }
++#endif
+ 
+ #define	HAVE_INLINE_FLS
+ 
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/sys/sys/cdefs.h new-build-tree/oskit/freebsd/3.x/src/sys/sys/cdefs.h
+--- old-build-tree/oskit/freebsd/3.x/src/sys/sys/cdefs.h	2006-11-23 20:16:37.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/sys/sys/cdefs.h	2006-11-23 20:19:03.000000000 +0100
+@@ -122,7 +122,7 @@
+ #define __pure2		__attribute__((__const__))
+ #define __unused
+ #endif
+-#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7 || __GNUC__ == 3
++#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7) || __GNUC__ >= 3
+ #define __dead2		__attribute__((__noreturn__))
+ #define __pure2		__attribute__((__const__))
+ #define __unused	__attribute__((__unused__))
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/sys/sys/proc.h new-build-tree/oskit/freebsd/3.x/src/sys/sys/proc.h
+--- old-build-tree/oskit/freebsd/3.x/src/sys/sys/proc.h	2003-01-06 22:03:12.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/sys/sys/proc.h	2006-11-23 20:17:21.000000000 +0100
+@@ -374,9 +374,9 @@
+ extern struct proc *initproc, *pageproc; /* Process slots for init, pager. */
+ 
+ #define	NQS	32			/* 32 run queues. */
+-extern struct prochd qs[];
+-extern struct prochd rtqs[];
+-extern struct prochd idqs[];
++extern struct prochd *qs;
++extern struct prochd *rtqs;
++extern struct prochd *idqs;
+ extern int	whichqs;	/* Bit mask summary of non-empty Q's. */
+ extern int	whichrtqs;	/* Bit mask summary of non-empty Q's. */
+ extern int	whichidqs;	/* Bit mask summary of non-empty Q's. */
+diff -rN -u old-build-tree/oskit/freebsd/3.x/src/sys/sys/systm.h new-build-tree/oskit/freebsd/3.x/src/sys/sys/systm.h
+--- old-build-tree/oskit/freebsd/3.x/src/sys/sys/systm.h	2006-11-23 20:16:37.000000000 +0100
++++ new-build-tree/oskit/freebsd/3.x/src/sys/sys/systm.h	2006-11-23 20:10:20.000000000 +0100
+@@ -44,6 +44,7 @@
+ 
+ #include <machine/cpufunc.h>
+ #include <sys/callout.h>
++#include <sys/cdefs.h>
+ 
+ extern int securelevel;		/* system security level (see init(8)) */
+ 
+diff -rN -u old-build-tree/oskit/freebsd/shared/GNUmakerules new-build-tree/oskit/freebsd/shared/GNUmakerules
+--- old-build-tree/oskit/freebsd/shared/GNUmakerules	2003-01-06 22:03:28.000000000 +0100
++++ new-build-tree/oskit/freebsd/shared/GNUmakerules	2006-11-23 19:54:58.000000000 +0100
+@@ -40,7 +40,8 @@
+ 	   objinclude
+ 
+ ifeq ($(HOST_ARCH),x86)
+-OBJINC   = $(OSKIT_SRCDIR)/freebsd/src/sys/i386/include 
++OBJINC   = $(OSKIT_SRCDIR)/freebsd/src/sys/i386/include
++INCDIRS += $(OSKIT_SRCDIR)/freebsd/dev/x86/conf
+ else
+ OBJINC   = $(OSKIT_SRCDIR)/freebsd/shared/arm32/include 
+ endif
+diff -rN -u old-build-tree/oskit/freebsd/shared/kern_clock.c new-build-tree/oskit/freebsd/shared/kern_clock.c
+--- old-build-tree/oskit/freebsd/shared/kern_clock.c	2003-01-06 22:03:29.000000000 +0100
++++ new-build-tree/oskit/freebsd/shared/kern_clock.c	2006-11-23 20:04:57.000000000 +0100
+@@ -85,7 +85,7 @@
+ /* Exported to machdep.c. */
+ struct callout *callfree, *callout;
+ 
+-static struct callout calltodo;
++struct callout calltodo;
+ 
+ long tk_cancc;
+ long tk_nin;
+diff -rN -u old-build-tree/oskit/freebsd/src/sys/i386/include/cpufunc.h new-build-tree/oskit/freebsd/src/sys/i386/include/cpufunc.h
+--- old-build-tree/oskit/freebsd/src/sys/i386/include/cpufunc.h	2003-01-06 22:04:11.000000000 +0100
++++ new-build-tree/oskit/freebsd/src/sys/i386/include/cpufunc.h	2006-11-23 20:03:11.000000000 +0100
+@@ -79,6 +79,7 @@
+ #endif
+ }
+ 
++#ifndef _OSKIT_C_STRING_H_
+ #define	HAVE_INLINE_FFS
+ 
+ static __inline int
+@@ -99,6 +100,7 @@
+ 			 : "=r" (result) : "0" (mask));
+ 	return (result);
+ }
++#endif
+ 
+ #if __GNUC__ < 2
+ 
+diff -rN -u old-build-tree/oskit/freebsd/src/sys/i386/isa/rc.c new-build-tree/oskit/freebsd/src/sys/i386/isa/rc.c
+--- old-build-tree/oskit/freebsd/src/sys/i386/isa/rc.c	2003-01-06 22:04:21.000000000 +0100
++++ new-build-tree/oskit/freebsd/src/sys/i386/isa/rc.c	2006-11-23 20:06:31.000000000 +0100
+@@ -669,8 +669,8 @@
+ 						    (tptr[0] |
+ 						    rc_rcsrt[tptr[INPUT_FLAGS_SHIFT] & 0xF], tp);
+ 				}
+-done1:
+ 			}
++done1:
+ 			if (rc->rc_flags & RC_DOXXFER) {
+ 				disable_intr();
+ 				rc_scheduled_event -= LOTS_OF_EVENTS;
+diff -rN -u old-build-tree/oskit/freebsd/src/sys/sys/proc.h new-build-tree/oskit/freebsd/src/sys/sys/proc.h
+--- old-build-tree/oskit/freebsd/src/sys/sys/proc.h	2003-01-06 22:04:52.000000000 +0100
++++ new-build-tree/oskit/freebsd/src/sys/sys/proc.h	2006-11-23 19:42:19.000000000 +0100
+@@ -295,9 +295,9 @@
+ extern struct proc *initproc, *pageproc; /* Process slots for init, pager. */
+ 
+ #define	NQS	32			/* 32 run queues. */
+-extern struct prochd qs[];
+-extern struct prochd rtqs[];
+-extern struct prochd idqs[];
++extern struct prochd *qs;
++extern struct prochd *rtqs;
++extern struct prochd *idqs;
+ extern int	whichqs;	/* Bit mask summary of non-empty Q's. */
+ struct	prochd {
+ 	struct	proc *ph_link;		/* Linked list of running processes. */
+diff -rN -u old-build-tree/oskit/kern/x86/multiboot_info_dump.c new-build-tree/oskit/kern/x86/multiboot_info_dump.c
+--- old-build-tree/oskit/kern/x86/multiboot_info_dump.c	2003-05-21 09:47:10.000000000 +0200
++++ new-build-tree/oskit/kern/x86/multiboot_info_dump.c	2006-11-23 19:27:36.000000000 +0100
+@@ -29,8 +29,30 @@
+ 	struct multiboot_module *m;
+ 	unsigned i;
+ 
++    /* %b (BCD - see http://www.thinkage.ca/english/gcos/expl/b/lib/printf.html) isn't supported by gcc */
++	#if 0
+ 	printf("MultiBoot Info (flags: 0x%b)\n", /* XXX %b? */
+ 	       bi->flags, MULTIBOOT_FLAGS_FORMAT);
++	#else
++    /* original MULTIBOOT_FLAGS_FORMAT said "\20\1MEMORY\2BOOT_DEVICE\3CMDLINE\4MODS\5AOUT_SYMS\6ELF_SHDR\7MEM_MAP"
++	 * Below code does a reasonable guess at about the right thing */
++	printf("MultiBoot Info (flags:");
++	if (bi->flags & MULTIBOOT_MEMORY)
++		printf(" MEMORY");
++	if (bi->flags & MULTIBOOT_BOOT_DEVICE)
++		printf(" BOOT_DEVICE");
++	if (bi->flags & MULTIBOOT_CMDLINE)
++		printf(" CMDLINE");
++	if (bi->flags & MULTIBOOT_MODS)
++		printf(" MODES");
++	if (bi->flags & MULTIBOOT_AOUT_SYMS)
++		printf(" AOUT_SYMS");
++	if (bi->flags & MULTIBOOT_ELF_SHDR)
++		printf(" ELF_SHDR");
++	if (bi->flags & MULTIBOOT_MEM_MAP)
++		printf(" MEM_MAP");
++	printf("\n");	
++	#endif	   
+ 
+ 	if (bi->flags & MULTIBOOT_MEMORY)
+ 		printf("  PC Memory: lower %dK, upper %dK\n",
+@@ -111,7 +133,7 @@
+ 				printf("undefined (%ld)\n", rdesc->Type);
+ 			}
+ 
+-			(char *)rdesc += rdesc->size + 4;
++			rdesc = (char*)rdesc + rdesc->size + 4;
+ 		};
+ 	}
+ 	
+diff -rN -u old-build-tree/oskit/linux/dev/softintr.c new-build-tree/oskit/linux/dev/softintr.c
+--- old-build-tree/oskit/linux/dev/softintr.c	2003-05-21 09:47:11.000000000 +0200
++++ new-build-tree/oskit/linux/dev/softintr.c	2006-11-28 18:03:16.000000000 +0100
+@@ -56,11 +56,12 @@
+  */
+ int softintr_vector;
+ 
++static void	linux_softintr_handler(void *arg);
++
+ void
+ linux_softintr_init(void)
+ {
+ 	int		err;
+-	static void	linux_softintr_handler(void *arg);
+ 
+ 	err = osenv_softirq_alloc_vector(&softintr_vector);
+ 	if (err)
+diff -rN -u old-build-tree/oskit/linux/src/drivers/net/3c507.c new-build-tree/oskit/linux/src/drivers/net/3c507.c
+--- old-build-tree/oskit/linux/src/drivers/net/3c507.c	2003-03-08 23:18:34.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/net/3c507.c	2006-11-24 13:26:18.000000000 +0100
+@@ -512,6 +512,8 @@
+ 	return 0;
+ }
+ 
++static void init_rx_bufs(struct device *);
++
+ /*	The typical workload of the driver:
+ 	Handle the network interface interrupts. */
+ static void el16_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+@@ -597,7 +599,6 @@
+ 
+ 	if ((status & 0x0070) != 0x0040  &&  dev->start) 
+ 	{
+-		static void init_rx_bufs(struct device *);
+ 		/* The Rx unit is not ready, it must be hung.  Restart the receiver by
+ 		   initializing the rx buffers, and issuing an Rx start command. */
+ 		if (net_debug)
+diff -rN -u old-build-tree/oskit/linux/src/drivers/net/hp100.c new-build-tree/oskit/linux/src/drivers/net/hp100.c
+--- old-build-tree/oskit/linux/src/drivers/net/hp100.c	2003-01-06 22:06:02.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/net/hp100.c	2006-11-28 17:56:57.000000000 +0100
+@@ -741,7 +741,7 @@
+     {
+       mem_ptr_phys = (u_int *)( hp100_inw( MEM_MAP_LSW ) | 
+ 				( hp100_inw( MEM_MAP_MSW ) << 16 ) );
+-      (u_int)mem_ptr_phys &= ~0x1fff;  /* 8k alignment */
++      mem_ptr_phys = (u_int)mem_ptr_phys & ~0x1fff;  /* 8k alignment */
+ 
+       if ( bus == HP100_BUS_ISA && ( (u_long)mem_ptr_phys & ~0xfffff ) != 0 )
+         {
+diff -rN -u old-build-tree/oskit/linux/src/drivers/pci/pci.c new-build-tree/oskit/linux/src/drivers/pci/pci.c
+--- old-build-tree/oskit/linux/src/drivers/pci/pci.c	2003-03-08 23:18:35.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/pci/pci.c	2006-11-28 17:59:19.000000000 +0100
+@@ -404,6 +404,7 @@
+ 			  }
+ 			pcibios_write_config_word(bus->number, devfn, PCI_COMMAND, cr);
+ skip_it:
++		continue;
+ 		}
+ 
+ 	/*
+diff -rN -u old-build-tree/oskit/linux/src/drivers/scsi/53c7,8xx.c new-build-tree/oskit/linux/src/drivers/scsi/53c7,8xx.c
+--- old-build-tree/oskit/linux/src/drivers/scsi/53c7,8xx.c	2003-03-08 23:18:35.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/scsi/53c7,8xx.c	2006-11-24 13:28:44.000000000 +0100
+@@ -3970,7 +3970,8 @@
+ 	restore_flags (flags);
+ 	cmd->result = le32_to_cpu(0xffff);	/* The NCR will overwrite message
+ 				       and status with valid data */
+-	cmd->host_scribble = (unsigned char *) tmp = create_cmd (cmd);
++	tmp = create_cmd (cmd);
++	cmd->host_scribble = (unsigned char *) tmp;
+     }
+     cli();
+     /*
+diff -rN -u old-build-tree/oskit/linux/src/drivers/scsi/advansys.c new-build-tree/oskit/linux/src/drivers/scsi/advansys.c
+--- old-build-tree/oskit/linux/src/drivers/scsi/advansys.c	2003-03-08 23:18:35.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/scsi/advansys.c	2006-11-28 17:55:14.000000000 +0100
+@@ -3668,6 +3668,7 @@
+  */
+ typedef Scsi_Cmnd            REQ, *REQP;
+ #define REQPNEXT(reqp)       ((REQP) ((reqp)->host_scribble))
++#define REQPNEXT_NP(reqp)       (((reqp)->host_scribble))
+ #define REQPNEXTP(reqp)      ((REQP *) &((reqp)->host_scribble))
+ #define REQPTID(reqp)        ((reqp)->target)
+ #define REQPTIME(reqp)       ((reqp)->SCp.this_residual)
+@@ -6120,7 +6121,7 @@
+     } else {
+         /* Append to 'done_scp' at the end with 'last_scp'. */
+         ASC_ASSERT(last_scp != NULL);
+-        REQPNEXT(last_scp) = asc_dequeue_list(&boardp->active,
++        REQPNEXT_NP(last_scp) = asc_dequeue_list(&boardp->active,
+             &new_last_scp, ASC_TID_ALL);
+         if (new_last_scp != NULL) {
+             ASC_ASSERT(REQPNEXT(last_scp) != NULL);
+@@ -6143,7 +6144,7 @@
+     } else {
+         /* Append to 'done_scp' at the end with 'last_scp'. */
+         ASC_ASSERT(last_scp != NULL);
+-        REQPNEXT(last_scp) = asc_dequeue_list(&boardp->waiting,
++        REQPNEXT_NP(last_scp) = asc_dequeue_list(&boardp->waiting,
+             &new_last_scp, ASC_TID_ALL);
+         if (new_last_scp != NULL) {
+             ASC_ASSERT(REQPNEXT(last_scp) != NULL);
+@@ -6398,7 +6399,7 @@
+                     ASC_TID_ALL);
+             } else {
+                 ASC_ASSERT(last_scp != NULL);
+-                REQPNEXT(last_scp) = asc_dequeue_list(&boardp->done,
++                REQPNEXT_NP(last_scp) = asc_dequeue_list(&boardp->done,
+                     &new_last_scp, ASC_TID_ALL);
+                 if (new_last_scp != NULL) {
+                     ASC_ASSERT(REQPNEXT(last_scp) != NULL);
+@@ -6470,7 +6471,7 @@
+     while (scp != NULL) {
+         ASC_DBG1(3, "asc_scsi_done_list: scp 0x%lx\n", (ulong) scp);
+         tscp = REQPNEXT(scp);
+-        REQPNEXT(scp) = NULL;
++        REQPNEXT_NP(scp) = NULL;
+         ASC_STATS(scp->host, done);
+         ASC_ASSERT(scp->scsi_done != NULL);
+         scp->scsi_done(scp);
+@@ -7515,7 +7516,7 @@
+     tid = REQPTID(reqp);
+     ASC_ASSERT(tid >= 0 && tid <= ADV_MAX_TID);
+     if (flag == ASC_FRONT) {
+-        REQPNEXT(reqp) = ascq->q_first[tid];
++        REQPNEXT_NP(reqp) = ascq->q_first[tid];
+         ascq->q_first[tid] = reqp;
+         /* If the queue was empty, set the last pointer. */
+         if (ascq->q_last[tid] == NULL) {
+@@ -7523,10 +7524,10 @@
+         }
+     } else { /* ASC_BACK */
+         if (ascq->q_last[tid] != NULL) {
+-            REQPNEXT(ascq->q_last[tid]) = reqp;
++            REQPNEXT_NP(ascq->q_last[tid]) = reqp;
+         }
+         ascq->q_last[tid] = reqp;
+-        REQPNEXT(reqp) = NULL;
++        REQPNEXT_NP(reqp) = NULL;
+         /* If the queue was empty, set the first pointer. */
+         if (ascq->q_first[tid] == NULL) {
+             ascq->q_first[tid] = reqp;
+@@ -7647,7 +7648,7 @@
+                     lastp = ascq->q_last[i];
+                 } else {
+                     ASC_ASSERT(lastp != NULL);
+-                    REQPNEXT(lastp) = ascq->q_first[i];
++                    REQPNEXT_NP(lastp) = ascq->q_first[i];
+                     lastp = ascq->q_last[i];
+                 }
+                 ascq->q_first[i] = ascq->q_last[i] = NULL;
+@@ -7725,8 +7726,8 @@
+              currp; prevp = currp, currp = REQPNEXT(currp)) {
+             if (currp == reqp) {
+                 ret = ASC_TRUE;
+-                REQPNEXT(prevp) = REQPNEXT(currp);
+-                REQPNEXT(reqp) = NULL;
++                REQPNEXT_NP(prevp) = REQPNEXT(currp);
++                REQPNEXT_NP(reqp) = NULL;
+                 if (ascq->q_last[tid] == reqp) {
+                     ascq->q_last[tid] = prevp;
+                 }
+@@ -14583,7 +14584,7 @@
+  * on big-endian platforms so char fields read as words are actually being
+  * unswapped on big-endian platforms.
+  */
+-STATIC ADVEEP_3550_CONFIG
++ADVEEP_3550_CONFIG
+ Default_3550_EEPROM_Config ASC_INITDATA = {
+     ADV_EEPROM_BIOS_ENABLE,     /* cfg_lsw */
+     0x0000,                     /* cfg_msw */
+@@ -14659,7 +14660,7 @@
+     0                           /* num_of_err */
+ };
+ 
+-STATIC ADVEEP_38C0800_CONFIG
++ADVEEP_38C0800_CONFIG
+ Default_38C0800_EEPROM_Config ASC_INITDATA = {
+     ADV_EEPROM_BIOS_ENABLE,     /* 00 cfg_lsw */
+     0x0000,                     /* 01 cfg_msw */
+@@ -14789,7 +14790,7 @@
+     0                           /* 63 reserved */
+ };
+ 
+-STATIC ADVEEP_38C1600_CONFIG
++ADVEEP_38C1600_CONFIG
+ Default_38C1600_EEPROM_Config ASC_INITDATA = {
+     ADV_EEPROM_BIOS_ENABLE,     /* 00 cfg_lsw */
+     0x0000,                     /* 01 cfg_msw */
+diff -rN -u old-build-tree/oskit/linux/src/drivers/scsi/qlogicisp.c new-build-tree/oskit/linux/src/drivers/scsi/qlogicisp.c
+--- old-build-tree/oskit/linux/src/drivers/scsi/qlogicisp.c	2003-03-08 23:18:36.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/scsi/qlogicisp.c	2006-11-28 17:59:49.000000000 +0100
+@@ -555,7 +555,7 @@
+ static void	isp1020_print_status_entry(struct Status_Entry *);
+ #endif
+ 
+-static struct proc_dir_entry proc_scsi_isp1020 = {
++struct proc_dir_entry proc_scsi_isp1020 = {
+ 	PROC_SCSI_QLOGICISP, 7, "isp1020",
+ 	S_IFDIR | S_IRUGO | S_IXUGO, 2
+ };
+diff -rN -u old-build-tree/oskit/linux/src/drivers/scsi/scsi.c new-build-tree/oskit/linux/src/drivers/scsi/scsi.c
+--- old-build-tree/oskit/linux/src/drivers/scsi/scsi.c	2003-03-08 23:18:36.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/scsi/scsi.c	2006-11-28 18:01:20.000000000 +0100
+@@ -3322,6 +3322,7 @@
+     case MODULE_SCSI_IOCTL:
+ 	break;
+     default:
++	break;
+     }
+     return;
+ }
+diff -rN -u old-build-tree/oskit/linux/src/drivers/scsi/seagate.c new-build-tree/oskit/linux/src/drivers/scsi/seagate.c
+--- old-build-tree/oskit/linux/src/drivers/scsi/seagate.c	2003-03-08 23:18:36.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/scsi/seagate.c	2006-11-28 18:01:58.000000000 +0100
+@@ -684,7 +684,7 @@
+   done_fn = done;
+   current_target = SCpnt->target;
+   current_lun = SCpnt->lun;
+-  (const void *) current_cmnd = SCpnt->cmnd;
++  current_cmnd = (const void *) SCpnt->cmnd;
+   current_data = (unsigned char *) SCpnt->request_buffer;
+   current_bufflen = SCpnt->request_bufflen;
+   SCint = SCpnt;
+diff -rN -u old-build-tree/oskit/linux/src/drivers/scsi/u14-34f.c new-build-tree/oskit/linux/src/drivers/scsi/u14-34f.c
+--- old-build-tree/oskit/linux/src/drivers/scsi/u14-34f.c	2003-03-08 23:18:36.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/scsi/u14-34f.c	2006-11-28 18:04:17.000000000 +0100
+@@ -553,7 +553,7 @@
+ 
+ #define DEV2H(x) H2DEV(x)
+ #define V2DEV(addr) ((addr) ? H2DEV(virt_to_bus((void *)addr)) : 0)
+-#define DEV2V(addr) ((addr) ? DEV2H(bus_to_virt((unsigned long)addr)) : 0)
++#define DEV2V(addr) ((addr) ? DEV2H(bus_to_virt((unsigned long)(addr))) : 0)
+ 
+ static void do_interrupt_handler(int, void *, struct pt_regs *);
+ static void flush_dev(Scsi_Device *, unsigned long, unsigned int, unsigned int);
+diff -rN -u old-build-tree/oskit/linux/src/drivers/sound/sb_ess.c new-build-tree/oskit/linux/src/drivers/sound/sb_ess.c
+--- old-build-tree/oskit/linux/src/drivers/sound/sb_ess.c	2003-03-08 23:18:37.000000000 +0100
++++ new-build-tree/oskit/linux/src/drivers/sound/sb_ess.c	2006-11-28 18:00:47.000000000 +0100
+@@ -778,6 +778,7 @@
+ 
+ 		default:
+ 			/* printk(KERN_WARN "ESS: Unexpected interrupt\n"); */
++			break;
+ 	}
+ }
+ 
+diff -rN -u old-build-tree/oskit/linux/src/fs/affs/super.c new-build-tree/oskit/linux/src/fs/affs/super.c
+--- old-build-tree/oskit/linux/src/fs/affs/super.c	2003-01-06 22:07:29.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/affs/super.c	2006-11-28 18:08:56.000000000 +0100
+@@ -150,7 +150,10 @@
+ 					printk("AFFS: Argument for set[ug]id option missing\n");
+ 					return 0;
+ 				} else {
+-					(f ? *uid : *gid) = simple_strtoul(value,&value,0);
++					if (f)
++						*uid = simple_strtoul(value,&value,0);
++					else	
++						*gid = simple_strtoul(value,&value,0);
+ 					if (*value) {
+ 						printk("AFFS: Bad set[ug]id argument\n");
+ 						return 0;
+diff -rN -u old-build-tree/oskit/linux/src/fs/buffer.c new-build-tree/oskit/linux/src/fs/buffer.c
+--- old-build-tree/oskit/linux/src/fs/buffer.c	2003-03-08 23:18:37.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/buffer.c	2006-11-28 18:09:45.000000000 +0100
+@@ -83,10 +83,10 @@
+ static struct buffer_head * reuse_list = NULL;
+ static struct wait_queue * buffer_wait = NULL;
+ 
+-static int nr_buffers = 0;
++int nr_buffers = 0;
+ static int nr_buffers_type[NR_LIST] = {0,};
+ static unsigned long size_buffers_type[NR_LIST];
+-static int nr_buffer_heads = 0;
++int nr_buffer_heads = 0;
+ static int nr_unused_buffer_heads = 0;
+ static int nr_hashed_buffers = 0;
+ 
+diff -rN -u old-build-tree/oskit/linux/src/fs/sysv/inode.c new-build-tree/oskit/linux/src/fs/sysv/inode.c
+--- old-build-tree/oskit/linux/src/fs/sysv/inode.c	2003-01-06 22:07:39.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/sysv/inode.c	2006-11-28 18:11:56.000000000 +0100
+@@ -442,7 +442,6 @@
+ 			unlock_super(sb);
+ 			printk("SysV FS: cannot read superblock in %d byte mode\n", sb->sv_block_size);
+ 			goto failed;
+-		superblock_ok:
+ 		}
+ 	} else {
+ 		/* Switch to 512 block size. Unfortunately, we have to
+@@ -491,6 +490,7 @@
+ 				goto failed;
+ 		}
+ 	}
++	superblock_ok:
+ 	sb->sv_ninodes = (sb->sv_firstdatazone - sb->sv_firstinodezone) << sb->sv_inodes_per_block_bits;
+ 	if (!silent)
+ 		printk("VFS: Found a %s FS (block size = %d) on device %s\n",
+diff -rN -u old-build-tree/oskit/linux/src/fs/ufs/dir.c new-build-tree/oskit/linux/src/fs/ufs/dir.c
+--- old-build-tree/oskit/linux/src/fs/ufs/dir.c	2003-03-08 23:18:39.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/ufs/dir.c	2006-11-28 18:12:40.000000000 +0100
+@@ -179,7 +179,7 @@
+ 	return (error_msg == NULL ? 1 : 0);
+ }
+ 
+-static struct file_operations ufs_dir_operations = {
++struct file_operations ufs_dir_operations = {
+ 	NULL,			/* lseek */
+ 	NULL,			/* read */
+ 	NULL,			/* write */
+diff -rN -u old-build-tree/oskit/linux/src/fs/ufs/file.c new-build-tree/oskit/linux/src/fs/ufs/file.c
+--- old-build-tree/oskit/linux/src/fs/ufs/file.c	2003-03-08 23:18:39.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/ufs/file.c	2006-11-28 18:13:17.000000000 +0100
+@@ -49,7 +49,7 @@
+  * We have mostly NULL's here: the current defaults are ok for
+  * the ufs filesystem.
+  */
+-static struct file_operations ufs_file_operations = {
++struct file_operations ufs_file_operations = {
+ 	ufs_file_lseek,	/* lseek */
+ 	generic_file_read,	/* read */
+ 	ufs_file_write, 	/* write */
+diff -rN -u old-build-tree/oskit/linux/src/fs/ufs/super.c new-build-tree/oskit/linux/src/fs/ufs/super.c
+--- old-build-tree/oskit/linux/src/fs/ufs/super.c	2003-01-06 22:07:41.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/ufs/super.c	2006-11-28 18:14:03.000000000 +0100
+@@ -921,7 +921,7 @@
+ 	return copy_to_user(buf, &tmp, bufsiz) ? -EFAULT : 0;
+ }
+ 
+-static struct super_operations ufs_super_ops = {
++struct super_operations ufs_super_ops = {
+ 	ufs_read_inode,
+ 	ufs_write_inode,
+ 	ufs_put_inode,
+@@ -933,7 +933,7 @@
+ 	ufs_remount
+ };
+ 
+-static struct file_system_type ufs_fs_type = {
++struct file_system_type ufs_fs_type = {
+ 	"ufs", 
+ 	FS_REQUIRES_DEV,
+ 	ufs_read_super,
+diff -rN -u old-build-tree/oskit/linux/src/fs/ufs/truncate.c new-build-tree/oskit/linux/src/fs/ufs/truncate.c
+--- old-build-tree/oskit/linux/src/fs/ufs/truncate.c	2003-01-06 22:07:41.000000000 +0100
++++ new-build-tree/oskit/linux/src/fs/ufs/truncate.c	2006-11-28 18:15:01.000000000 +0100
+@@ -158,6 +158,7 @@
+ 			free_count = uspi->s_fpb;
+ 		}
+ next2:
++		continue;
+ 	}
+ 	
+ 	if (free_count > 0)
+@@ -259,6 +260,7 @@
+ 		inode->i_blocks -= uspi->s_nspb;
+ 		mark_inode_dirty(inode);
+ next:
++	continue;
+ 	}
+ 
+ 	if (free_count > 0) {
+diff -rN -u old-build-tree/oskit/oskit/x86/base_trap.h new-build-tree/oskit/oskit/x86/base_trap.h
+--- old-build-tree/oskit/oskit/x86/base_trap.h	2006-11-23 19:14:36.000000000 +0100
++++ new-build-tree/oskit/oskit/x86/base_trap.h	2006-11-23 19:14:59.000000000 +0100
+@@ -116,7 +116,7 @@
+  * which pushes the state frame described above
+  * and calls the trap handler, below.
+  */
+-extern struct gate_init_entry base_trap_inittab[];
++extern struct gate_init_entry *base_trap_inittab;
+ 
+ /*
+  * There are 32 trap vectors. At present 19-31 are Intel reserved, but
+diff -rN -u old-build-tree/oskit/oskit/x86/pc/base_irq.h new-build-tree/oskit/oskit/x86/pc/base_irq.h
+--- old-build-tree/oskit/oskit/x86/pc/base_irq.h	2006-11-23 19:18:15.000000000 +0100
++++ new-build-tree/oskit/oskit/x86/pc/base_irq.h	2006-11-23 19:18:34.000000000 +0100
+@@ -86,7 +86,7 @@
+  * This gate initialization table is used by base_irq_init
+  * to initialize the hardware interrupt vectors in the base IDT.
+  */
+-extern struct gate_init_entry base_irq_inittab[];
++extern struct gate_init_entry *base_irq_inittab;
+ 
+ /*
+  * Default IRQ handler for unexpected hardware interrupts
+diff -rN -u old-build-tree/oskit/uvm/netbsd/sys/uvm/uvm_pdaemon.c new-build-tree/oskit/uvm/netbsd/sys/uvm/uvm_pdaemon.c
+--- old-build-tree/oskit/uvm/netbsd/sys/uvm/uvm_pdaemon.c	2003-01-06 22:10:08.000000000 +0100
++++ new-build-tree/oskit/uvm/netbsd/sys/uvm/uvm_pdaemon.c	2006-11-23 19:35:27.000000000 +0100
+@@ -120,7 +120,7 @@
+ 	int timo = 0;
+ 	int s = splbio();
+ 
+-	XPRINTF(OSKIT_DEBUG_SYNC, __FUNCTION__": wmsg = %s\n", wmsg);
++	XPRINTF(OSKIT_DEBUG_SYNC, "%s : wmsg = %s\n", __FUNCTION__, wmsg);
+ 
+ 	/*
+ 	 * check for page daemon going to sleep (waiting for itself)
+

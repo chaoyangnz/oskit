@@ -85,13 +85,14 @@ simple_sleep_wakeup(oskit_osenv_sleep_t *o,
 	osenv_wakeup(sr, wakeup_status);
 }
 
+static oskit_error_t sleep_object_create(oskit_sleep_t **);
+
 /*
  * function to create a sleep object.
  */
 static OSKIT_COMDECL
 simple_sleep_create(oskit_osenv_sleep_t *b, oskit_sleep_t **out_sleep)
 {
-	static oskit_error_t sleep_object_create(oskit_sleep_t **);
 
 	return sleep_object_create(out_sleep);
 }

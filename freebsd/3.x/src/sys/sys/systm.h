@@ -44,6 +44,7 @@
 
 #include <machine/cpufunc.h>
 #include <sys/callout.h>
+#include <sys/cdefs.h>
 
 extern int securelevel;		/* system security level (see init(8)) */
 

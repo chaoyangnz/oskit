@@ -116,7 +116,7 @@ extern void base_trap_init(void);
  * which pushes the state frame described above
  * and calls the trap handler, below.
  */
-extern struct gate_init_entry base_trap_inittab[];
+extern struct gate_init_entry *base_trap_inittab;
 
 /*
  * There are 32 trap vectors. At present 19-31 are Intel reserved, but

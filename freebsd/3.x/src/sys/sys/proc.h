@@ -374,9 +374,9 @@ extern struct proclist zombproc;	/* List of zombie processes. */
 extern struct proc *initproc, *pageproc; /* Process slots for init, pager. */
 
 #define	NQS	32			/* 32 run queues. */
-extern struct prochd qs[];
-extern struct prochd rtqs[];
-extern struct prochd idqs[];
+extern struct prochd *qs;
+extern struct prochd *rtqs;
+extern struct prochd *idqs;
 extern int	whichqs;	/* Bit mask summary of non-empty Q's. */
 extern int	whichrtqs;	/* Bit mask summary of non-empty Q's. */
 extern int	whichidqs;	/* Bit mask summary of non-empty Q's. */

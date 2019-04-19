@@ -442,7 +442,6 @@ struct super_block *sysv_read_super(struct super_block *sb,void *data,
 			unlock_super(sb);
 			printk("SysV FS: cannot read superblock in %d byte mode\n", sb->sv_block_size);
 			goto failed;
-		superblock_ok:
 		}
 	} else {
 		/* Switch to 512 block size. Unfortunately, we have to
@@ -491,6 +490,7 @@ struct super_block *sysv_read_super(struct super_block *sb,void *data,
 				goto failed;
 		}
 	}
+	superblock_ok:
 	sb->sv_ninodes = (sb->sv_firstdatazone - sb->sv_firstinodezone) << sb->sv_inodes_per_block_bits;
 	if (!silent)
 		printk("VFS: Found a %s FS (block size = %d) on device %s\n",

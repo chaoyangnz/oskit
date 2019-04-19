@@ -3668,6 +3668,7 @@ typedef struct {
  */
 typedef Scsi_Cmnd            REQ, *REQP;
 #define REQPNEXT(reqp)       ((REQP) ((reqp)->host_scribble))
+#define REQPNEXT_NP(reqp)       (((reqp)->host_scribble))
 #define REQPNEXTP(reqp)      ((REQP *) &((reqp)->host_scribble))
 #define REQPTID(reqp)        ((reqp)->target)
 #define REQPTIME(reqp)       ((reqp)->SCp.this_residual)
@@ -6120,7 +6121,7 @@ advansys_reset(Scsi_Cmnd *scp)
     } else {
         /* Append to 'done_scp' at the end with 'last_scp'. */
         ASC_ASSERT(last_scp != NULL);
-        REQPNEXT(last_scp) = asc_dequeue_list(&boardp->active,
+        REQPNEXT_NP(last_scp) = asc_dequeue_list(&boardp->active,
             &new_last_scp, ASC_TID_ALL);
         if (new_last_scp != NULL) {
             ASC_ASSERT(REQPNEXT(last_scp) != NULL);
@@ -6143,7 +6144,7 @@ advansys_reset(Scsi_Cmnd *scp)
     } else {
         /* Append to 'done_scp' at the end with 'last_scp'. */
         ASC_ASSERT(last_scp != NULL);
-        REQPNEXT(last_scp) = asc_dequeue_list(&boardp->waiting,
+        REQPNEXT_NP(last_scp) = asc_dequeue_list(&boardp->waiting,
             &new_last_scp, ASC_TID_ALL);
         if (new_last_scp != NULL) {
             ASC_ASSERT(REQPNEXT(last_scp) != NULL);
@@ -6398,7 +6399,7 @@ advansys_interrupt(int irq, void *dev_id, struct pt_regs *regs)
                     ASC_TID_ALL);
             } else {
                 ASC_ASSERT(last_scp != NULL);
-                REQPNEXT(last_scp) = asc_dequeue_list(&boardp->done,
+                REQPNEXT_NP(last_scp) = asc_dequeue_list(&boardp->done,
                     &new_last_scp, ASC_TID_ALL);
                 if (new_last_scp != NULL) {
                     ASC_ASSERT(REQPNEXT(last_scp) != NULL);
@@ -6470,7 +6471,7 @@ asc_scsi_done_list(Scsi_Cmnd *scp)
     while (scp != NULL) {
         ASC_DBG1(3, "asc_scsi_done_list: scp 0x%lx\n", (ulong) scp);
         tscp = REQPNEXT(scp);
-        REQPNEXT(scp) = NULL;
+        REQPNEXT_NP(scp) = NULL;
         ASC_STATS(scp->host, done);
         ASC_ASSERT(scp->scsi_done != NULL);
         scp->scsi_done(scp);
@@ -7515,7 +7516,7 @@ asc_enqueue(asc_queue_t *ascq, REQP reqp, int flag)
     tid = REQPTID(reqp);
     ASC_ASSERT(tid >= 0 && tid <= ADV_MAX_TID);
     if (flag == ASC_FRONT) {
-        REQPNEXT(reqp) = ascq->q_first[tid];
+        REQPNEXT_NP(reqp) = ascq->q_first[tid];
         ascq->q_first[tid] = reqp;
         /* If the queue was empty, set the last pointer. */
         if (ascq->q_last[tid] == NULL) {
@@ -7523,10 +7524,10 @@ asc_enqueue(asc_queue_t *ascq, REQP reqp, int flag)
         }
     } else { /* ASC_BACK */
         if (ascq->q_last[tid] != NULL) {
-            REQPNEXT(ascq->q_last[tid]) = reqp;
+            REQPNEXT_NP(ascq->q_last[tid]) = reqp;
         }
         ascq->q_last[tid] = reqp;
-        REQPNEXT(reqp) = NULL;
+        REQPNEXT_NP(reqp) = NULL;
         /* If the queue was empty, set the first pointer. */
         if (ascq->q_first[tid] == NULL) {
             ascq->q_first[tid] = reqp;
@@ -7647,7 +7648,7 @@ asc_dequeue_list(asc_queue_t *ascq, REQP *lastpp, int tid)
                     lastp = ascq->q_last[i];
                 } else {
                     ASC_ASSERT(lastp != NULL);
-                    REQPNEXT(lastp) = ascq->q_first[i];
+                    REQPNEXT_NP(lastp) = ascq->q_first[i];
                     lastp = ascq->q_last[i];
                 }
                 ascq->q_first[i] = ascq->q_last[i] = NULL;
@@ -7725,8 +7726,8 @@ asc_rmqueue(asc_queue_t *ascq, REQP reqp)
              currp; prevp = currp, currp = REQPNEXT(currp)) {
             if (currp == reqp) {
                 ret = ASC_TRUE;
-                REQPNEXT(prevp) = REQPNEXT(currp);
-                REQPNEXT(reqp) = NULL;
+                REQPNEXT_NP(prevp) = REQPNEXT(currp);
+                REQPNEXT_NP(reqp) = NULL;
                 if (ascq->q_last[tid] == reqp) {
                     ascq->q_last[tid] = prevp;
                 }
@@ -14583,7 +14584,7 @@ STATIC ADV_DCNT _adv_asc38C1600_chksum =
  * on big-endian platforms so char fields read as words are actually being
  * unswapped on big-endian platforms.
  */
-STATIC ADVEEP_3550_CONFIG
+ADVEEP_3550_CONFIG
 Default_3550_EEPROM_Config ASC_INITDATA = {
     ADV_EEPROM_BIOS_ENABLE,     /* cfg_lsw */
     0x0000,                     /* cfg_msw */
@@ -14659,7 +14660,7 @@ ADVEEP_3550_Config_Field_IsChar ASC_INITDATA = {
     0                           /* num_of_err */
 };
 
-STATIC ADVEEP_38C0800_CONFIG
+ADVEEP_38C0800_CONFIG
 Default_38C0800_EEPROM_Config ASC_INITDATA = {
     ADV_EEPROM_BIOS_ENABLE,     /* 00 cfg_lsw */
     0x0000,                     /* 01 cfg_msw */
@@ -14789,7 +14790,7 @@ ADVEEP_38C0800_Config_Field_IsChar ASC_INITDATA = {
     0                           /* 63 reserved */
 };
 
-STATIC ADVEEP_38C1600_CONFIG
+ADVEEP_38C1600_CONFIG
 Default_38C1600_EEPROM_Config ASC_INITDATA = {
     ADV_EEPROM_BIOS_ENABLE,     /* 00 cfg_lsw */
     0x0000,                     /* 01 cfg_msw */

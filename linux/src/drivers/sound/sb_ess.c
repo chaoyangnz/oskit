@@ -778,6 +778,7 @@ printk(KERN_INFO "FKS: ess_handle_channel %s irq_mode=%d\n", channel, irq_mode);
 
 		default:
 			/* printk(KERN_WARN "ESS: Unexpected interrupt\n"); */
+			break;
 	}
 }
 

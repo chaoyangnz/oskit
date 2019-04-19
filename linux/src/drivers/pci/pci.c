@@ -404,6 +404,7 @@ __initfunc(unsigned int pci_scan_bus(struct pci_bus *bus))
 			  }
 			pcibios_write_config_word(bus->number, devfn, PCI_COMMAND, cr);
 skip_it:
+		continue;
 		}
 
 	/*

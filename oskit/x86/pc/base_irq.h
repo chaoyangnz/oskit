@@ -86,7 +86,7 @@ void base_irq_init(void);
  * This gate initialization table is used by base_irq_init
  * to initialize the hardware interrupt vectors in the base IDT.
  */
-extern struct gate_init_entry base_irq_inittab[];
+extern struct gate_init_entry *base_irq_inittab;
 
 /*
  * Default IRQ handler for unexpected hardware interrupts

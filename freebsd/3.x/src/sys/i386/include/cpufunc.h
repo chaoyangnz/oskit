@@ -94,6 +94,7 @@ enable_intr(void)
 #endif /* !OSKIT */
 }
 
+#ifndef _OSKIT_C_STRING_H_
 #define	HAVE_INLINE_FFS
 
 static __inline int
@@ -114,6 +115,7 @@ ffs(int mask)
 			 : "=r" (result) : "0" (mask));
 	return (result);
 }
+#endif
 
 #define	HAVE_INLINE_FLS
 

@@ -101,12 +101,12 @@ copyout (const void *kaddr, void *udaddr, size_t len)
  */
 int subyte          (void *base, int byte)
 {
-	return (int)((char *)base = (char)byte);
+	return (int)(((char *)base)[0] = (char)byte);
 }
 
 int suibyte         (void *base, int byte)
 {
-	return (int)((char *)base = (char)byte);
+	return (int)(((char *)base)[0] = (char)byte);
 }
 
 /* ---------------------------------------------------------------------- */

@@ -553,7 +553,7 @@ static unsigned long io_port[] = {
 
 #define DEV2H(x) H2DEV(x)
 #define V2DEV(addr) ((addr) ? H2DEV(virt_to_bus((void *)addr)) : 0)
-#define DEV2V(addr) ((addr) ? DEV2H(bus_to_virt((unsigned long)addr)) : 0)
+#define DEV2V(addr) ((addr) ? DEV2H(bus_to_virt((unsigned long)(addr))) : 0)
 
 static void do_interrupt_handler(int, void *, struct pt_regs *);
 static void flush_dev(Scsi_Device *, unsigned long, unsigned int, unsigned int);

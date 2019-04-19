@@ -40,7 +40,8 @@ INCDIRS += $(OSKIT_SRCDIR)/freebsd/dev/include		\
 	   objinclude
 
 ifeq ($(HOST_ARCH),x86)
-OBJINC   = $(OSKIT_SRCDIR)/freebsd/src/sys/i386/include 
+OBJINC   = $(OSKIT_SRCDIR)/freebsd/src/sys/i386/include
+INCDIRS += $(OSKIT_SRCDIR)/freebsd/dev/x86/conf
 else
 OBJINC   = $(OSKIT_SRCDIR)/freebsd/shared/arm32/include 
 endif

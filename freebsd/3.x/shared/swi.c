@@ -73,12 +73,13 @@ static struct swilist swilists[NSWI];
  */
 static int swi_vector;
 
+static void	swi_softintr_handler(void *arg);
+extern void	bsdnet_net_softnet(void);
+
 void
 swi_init(void)
 {
 	int		err;
-	static void	swi_softintr_handler(void *arg);
-	extern void	bsdnet_net_softnet(void);
 
 	err = osenv_softirq_alloc_vector(&swi_vector);
 	if (err)

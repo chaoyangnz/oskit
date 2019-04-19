@@ -56,11 +56,12 @@ unsigned int local_bh_count[1];		/* SMP */
  */
 int softintr_vector;
 
+static void	linux_softintr_handler(void *arg);
+
 void
 linux_softintr_init(void)
 {
 	int		err;
-	static void	linux_softintr_handler(void *arg);
 
 	err = osenv_softirq_alloc_vector(&softintr_vector);
 	if (err)

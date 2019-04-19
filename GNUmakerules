@@ -70,12 +70,11 @@ LIBDIRS += $(OBJDIR)/lib
 # We prefix these with OSKIT_ rather than using the "normal" variables
 # so that you can override the normal variables on the make command line
 # in order to add options (e.g. 'make CFLAGS=-save-temps').
-# The -I- flag divides the -I line:
-#	-I flags before -I- are searched for #include "file" only, not <file>
-#	-I flags after -I- are searched for all include files.
-OSKIT_CPPFLAGS	+= -MD $(DEFINES) -I. $(addprefix -I,$(SRCDIRS)) \
-		    $(addprefix -I,$(MOSTLY_SRCDIRS)) \
-		    -I- $(addprefix -I,$(INCDIRS)) -nostdinc
+#	-iquote dirs are searched for #include "file" only, not <file>
+#	-I dirs are searched for all include files.
+OSKIT_CPPFLAGS	+= -MD $(DEFINES) -I. $(addprefix -iquote,$(SRCDIRS)) \
+		    $(addprefix -iquote,$(MOSTLY_SRCDIRS)) \
+		    $(addprefix -I,$(INCDIRS)) -nostdinc
 OSKIT_CFLAGS	+= $(OSKIT_CPPFLAGS) -Wall $(OSKIT_FFLAGS)
 OSKIT_LDFLAGS	+= $(addprefix -L,$(LIBDIRS))
 

@@ -29,8 +29,30 @@ multiboot_info_dump(struct multiboot_info *bi)
 	struct multiboot_module *m;
 	unsigned i;
 
+    /* %b (BCD - see http://www.thinkage.ca/english/gcos/expl/b/lib/printf.html) isn't supported by gcc */
+	#if 0
 	printf("MultiBoot Info (flags: 0x%b)\n", /* XXX %b? */
 	       bi->flags, MULTIBOOT_FLAGS_FORMAT);
+	#else
+    /* original MULTIBOOT_FLAGS_FORMAT said "\20\1MEMORY\2BOOT_DEVICE\3CMDLINE\4MODS\5AOUT_SYMS\6ELF_SHDR\7MEM_MAP"
+	 * Below code does a reasonable guess at about the right thing */
+	printf("MultiBoot Info (flags:");
+	if (bi->flags & MULTIBOOT_MEMORY)
+		printf(" MEMORY");
+	if (bi->flags & MULTIBOOT_BOOT_DEVICE)
+		printf(" BOOT_DEVICE");
+	if (bi->flags & MULTIBOOT_CMDLINE)
+		printf(" CMDLINE");
+	if (bi->flags & MULTIBOOT_MODS)
+		printf(" MODES");
+	if (bi->flags & MULTIBOOT_AOUT_SYMS)
+		printf(" AOUT_SYMS");
+	if (bi->flags & MULTIBOOT_ELF_SHDR)
+		printf(" ELF_SHDR");
+	if (bi->flags & MULTIBOOT_MEM_MAP)
+		printf(" MEM_MAP");
+	printf("\n");	
+	#endif	   
 
 	if (bi->flags & MULTIBOOT_MEMORY)
 		printf("  PC Memory: lower %dK, upper %dK\n",
@@ -111,7 +133,7 @@ multiboot_info_dump(struct multiboot_info *bi)
 				printf("undefined (%ld)\n", rdesc->Type);
 			}
 
-			(char *)rdesc += rdesc->size + 4;
+			rdesc = (char*)rdesc + rdesc->size + 4;
 		};
 	}
 	

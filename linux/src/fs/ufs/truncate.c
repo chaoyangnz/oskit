@@ -158,6 +158,7 @@ next1:
 			free_count = uspi->s_fpb;
 		}
 next2:
+		continue;
 	}
 	
 	if (free_count > 0)
@@ -259,6 +260,7 @@ static int ufs_trunc_indirect (struct inode * inode, unsigned offset, u32 * p)
 		inode->i_blocks -= uspi->s_nspb;
 		mark_inode_dirty(inode);
 next:
+	continue;
 	}
 
 	if (free_count > 0) {
